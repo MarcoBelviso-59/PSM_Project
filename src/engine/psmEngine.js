@@ -1080,6 +1080,10 @@ function validateFinal(pw, personalTokens = []) {
   const tokens = Array.isArray(personalTokens) ? personalTokens : [];
 
   const patterns = detectPatterns(pw, tokens);
+    if (patterns.some(p => p.type === "PERSONAL_INFO")) {
+    return { ok:false, msg:"Evita di includere nome/cognome o parti dell’email nella password." };
+  }
+
 
   if (patterns.some(p => p.type === "TOO_SHORT")) {
     return { ok:false, msg:"Minimo 8 caratteri." };
