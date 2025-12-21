@@ -870,6 +870,29 @@ if ((pw || "").length < 12) {
   score = Math.min(score, 69);
 }
 
+ // CAP extra: se la password è corta (<12) e mostra pattern a bassa entropia, max 49
+if ((pw || "").length < 12) {
+  const lowEntropyTypes = new Set([
+    "DICTIONARY",
+    "COMMON_EXACT",
+    "DECORATED_COMMON",
+    "MULTI_DICTIONARY_WORDS",
+    "SMALL_SET_WORDS",
+    "WORDY_PASSPHRASE",
+    "CONSECUTIVE_PATTERN",
+    "ALL_SAME_CHAR",
+    "REPEAT_2",
+    "REPEAT_3PLUS",
+    "LOW_UNIQUENESS",
+    "PERSONAL_INFO"
+  ]);
+
+  if (patterns.some(p => lowEntropyTypes.has(p.type))) {
+    score = Math.min(score, 49);
+  }
+}
+ 
+
 
 // CAP: sequenze ovvie (abcd, 1234, qwer, ecc.)
 if (patterns.some(pt => pt.type === "CONSECUTIVE_PATTERN")) {
