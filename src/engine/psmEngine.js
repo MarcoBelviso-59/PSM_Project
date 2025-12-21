@@ -1117,5 +1117,6 @@ function validateFinal(pw){
     deleetForDictionary,
     tokenizeWords
   };
-})(window);
+})(typeof globalThis !== "undefined" ? globalThis : (typeof window !== "undefined" ? window : this));
+
 
