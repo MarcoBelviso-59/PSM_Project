@@ -1075,8 +1075,11 @@ function evaluatePassword(pw, personalTokens){
   return { score, level, tips: [...new Set(tips)] };
 }
 
-function validateFinal(pw){
-  const patterns = detectPatterns(pw, personalTokens);
+function validateFinal(pw, personalTokens = []) {
+  // difesa: se arriva qualcosa di diverso da array, lo ignoro
+  const tokens = Array.isArray(personalTokens) ? personalTokens : [];
+
+  const patterns = detectPatterns(pw, tokens);
 
   if (patterns.some(p => p.type === "TOO_SHORT")) {
     return { ok:false, msg:"Minimo 8 caratteri." };
@@ -1093,12 +1096,15 @@ function validateFinal(pw){
   if (patterns.some(p => p.type === "MISSING_SYMBOL")) {
     return { ok:false, msg:"Aggiungi almeno un simbolo (es. ! ? @ #)." };
   }
-    const evaluation = evaluate(pw, personalTokens);
+
+  const evaluation = evaluate(pw, tokens);
   if (evaluation.score < 40) {
     return { ok:false, msg:"Password troppo debole (minimo: Discreta)." };
   }
-    return { ok:true, msg:"OK" };
+
+  return { ok:true, msg:"OK" };
 }
+
 
 
   global.PSMEngine = {
