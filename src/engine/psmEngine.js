@@ -118,6 +118,40 @@ function hasConsecutivePattern(p) {
   return false;
 }
 
+function hasNearConsecutivePattern(p) {
+  const s = normalize(p);
+  const letters = s.replace(/[^a-z]/g, "");
+  const digits  = s.replace(/[^0-9]/g, "");
+
+  // “near run”: finestra di 6 caratteri con al massimo 1 mismatch
+  // (es. abcdfef -> ha un solo salto d->f)
+  const hasNearRun = (str, windowLen = 6, maxMismatches = 1) => {
+    if (!str || str.length < windowLen) return false;
+
+    for (let start = 0; start <= str.length - windowLen; start++) {
+      let mism = 0;
+
+      for (let i = 1; i < windowLen; i++) {
+        const prev = str.charCodeAt(start + i - 1);
+        const cur  = str.charCodeAt(start + i);
+
+        if (Math.abs(cur - prev) !== 1) {
+          mism++;
+          if (mism > maxMismatches) break;
+        }
+      }
+
+      if (mism <= maxMismatches) return true;
+    }
+    return false;
+  };
+
+  // richiedo almeno 6 caratteri “puliti” per evitare falsi positivi
+  if (hasNearRun(letters, 6, 1)) return true;
+  if (hasNearRun(digits, 6, 1)) return true;
+
+  return false;
+}
 
   
 /* "Dizionario" di password/parole molto comuni (penalità, NON blocco) */
