@@ -162,8 +162,8 @@ const COMMON_WORDS = [
   "123456","1234567","12345678","123456789","1234567890","111111","000000","987654321","hereiam","mobile","phone","bet","letsgo","rabbit","clash",
   "abc123","iloveyou","sunshine","princess","password1","admin123","qazwsx","hello","helloworld","laptop","computer","dad","dog","cat","mum",
     // IT (curato, non enorme)
-  "ciao","benvenuto","benvenuta","salve","buongiorno","buonasera","questo","questa","andiamo","guido","andare","iosono","noisiamo","forte","debole","serie",
-  "mondo","amore","tiamo","test","admin1","accesso","login1","login2","eccomi","ecco","amico","amici","mare","sono","siamo","stadio","cantante"
+  "ciao","benvenuto","benvenuta","salve","buongiorno","buonasera","questo","questa","andiamo","guido","andare","iosono","noisiamo","forte","debole","serie","fiore","zucca","bellissima","sei","giocattolo","giostra","lavoro",
+  "mondo","amore","tiamo","test","admin1","accesso","login1","login2","eccomi","ecco","amico","amici","mare","sono","siamo","stadio","cantante","stagione","stagioni","estate","inverno","autunno","primavera"
 
 ];
 
