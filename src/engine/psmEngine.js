@@ -860,15 +860,16 @@ function evaluate(pw, personalTokens = []) {
     score = Math.min(score, cap);
   }
 
- // CAP finale: POP_CULTURE sempre massimo 39
+// CAP finale: POP_CULTURE sempre massimo 39
 if (patterns.some(p => p.type === "POP_CULTURE")) {
   score = Math.min(score, 39);
+}
 
-  // CAP finale: password < 12 caratteri -> max 79
+// CAP finale: password < 12 caratteri -> max 69 (sempre)
 if ((pw || "").length < 12) {
-  score = Math.min(score, 79);
+  score = Math.min(score, 69);
 }
-}
+
 
 // CAP: sequenze ovvie (abcd, 1234, qwer, ecc.)
 if (patterns.some(pt => pt.type === "CONSECUTIVE_PATTERN")) {
