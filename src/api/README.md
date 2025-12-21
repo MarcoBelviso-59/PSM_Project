@@ -8,3 +8,22 @@ L’endpoint principale coerente con DS2 è `POST /api/evaluate`, pensato per l�
 
 Dal punto di vista non funzionale, l’API deve essere deterministica (stesso input → stesso output, perché dipende dall’engine), rapida (compatibile con invocazioni frequenti durante la digitazione), e rispettosa della riservatezza: se viene introdotto logging, non deve memorizzare password in chiaro, ma al massimo informazioni tecniche aggregate. Quando si passerà all’implementazione, la scelta tecnologica può restare minimale e coerente con il prototipo JavaScript (ad esempio Node.js + Express), e l’eventuale CORS va gestito solo se UI e API sono eseguite su origini diverse. Collegamenti nel progetto: la UI in `src/web/` può continuare a chiamare l’engine direttamente (per demo locale) oppure chiamare l’API; il modulo `src/experiments/` può invocare engine o API, ma i risultati devono rimanere equivalenti e confrontabili perché derivano dallo stesso contratto.
 
+Esecuzione rapida (Windows PowerShell):
+- Avvio server:
+  - `cd src\api`
+  - `npm.cmd install`
+  - `npm.cmd start`
+
+- Test health:
+  - `Invoke-RestMethod http://localhost:3000/health`
+
+- Test evaluate:
+  - `Invoke-RestMethod -Method Post http://localhost:3000/api/evaluate -ContentType "application/json" -Body '{"password":"abcdfeff12"}'`
+
+- Test evaluate con contesto:
+  - `Invoke-RestMethod -Method Post http://localhost:3000/api/evaluate -ContentType "application/json" -Body '{"password":"Mario2025!","user":{"firstName":"Mario","lastName":"Rossi","email":"mario.rossi@gmail.com"}}'`
+
+Nota: su PowerShell le risposte 4xx possono generare eccezioni; per vedere il codice:
+`try { Invoke-RestMethod ... } catch { $_.Exception.Response.StatusCode }`
+
+
