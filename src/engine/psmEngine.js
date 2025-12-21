@@ -1117,6 +1117,11 @@ function validateFinal(pw){
     deleetForDictionary,
     tokenizeWords
   };
+  // Dual-mode: in Node esporta anche via module.exports
+if (typeof module === "object" && module.exports) {
+  module.exports = global.PSMEngine;
+}
+
 })(typeof globalThis !== "undefined" ? globalThis : (typeof window !== "undefined" ? window : this));
 
 
