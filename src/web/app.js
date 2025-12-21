@@ -127,7 +127,9 @@ btnContinua.addEventListener("click", () => {
     return;
   }
 
-  personalTokens = [normalize(nome), normalize(cognome), ...emailParts(email)].filter(Boolean);
+ const rawTokens = [normalize(nome), normalize(cognome), ...emailParts(email)].filter(Boolean);
+personalTokens = Array.from(new Set(rawTokens));
+
 
   who.textContent = `${nome} ${cognome} · ${email}`;
   step1.style.display = "none";
