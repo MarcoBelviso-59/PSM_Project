@@ -548,7 +548,12 @@ if (uniqueCount === 1) {
   if (!hasSym)   patterns.push({ type: "MISSING_SYMBOL" });
 
   // pattern noti
-  if (hasConsecutivePattern(p)) patterns.push({ type: "CONSECUTIVE_PATTERN" });
+  if (hasConsecutivePattern(p)) {
+  patterns.push({ type: "CONSECUTIVE_PATTERN" });
+} else if (hasNearConsecutivePattern(p)) {
+  patterns.push({ type: "NEAR_CONSECUTIVE_PATTERN" });
+}
+
 
   if (/(.)\1\1/.test(p)) patterns.push({ type: "REPEAT_3PLUS" });
   else if (/(.)\1/.test(p)) patterns.push({ type: "REPEAT_2" });
