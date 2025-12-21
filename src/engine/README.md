@@ -1,6 +1,6 @@
 # Engine (PSM_Project) — Modulo di valutazione password (estratto dalla UI)
 
-Questa cartella contiene l’engine di valutazione password, estratto dal prototipo web in `src/web/`. Dopo T2 la logica non vive più in `src/web/app.js`: la UI si limita a raccogliere input, costruire `personalTokens`, invocare l’engine e mostrare output. L’engine è la single source of truth per score, livello, pattern e suggerimenti; di conseguenza è anche la base per API (DS2) ed esperimenti (DS3–DS5).
+Questa cartella contiene l’engine di valutazione password, estratto dal prototipo web in `src/web/`. Dopo l'estrazione la logica non vive più in `src/web/app.js`: la UI si limita a raccogliere input, costruire `personalTokens`, invocare l’engine e mostrare output. L’engine è la single source of truth per score, livello, pattern e suggerimenti; di conseguenza è anche la base per API (DS2) ed esperimenti (DS3–DS5).
 
 File principale: `src/engine/psmEngine.js`. Il file definisce un oggetto globale `window.PSMEngine` per consentire l’uso diretto in browser (demo). In futuro l’engine potrà essere convertito a modulo, ma la consegna richiede prima di tutto stabilità e riuso.
 
