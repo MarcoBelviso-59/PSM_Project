@@ -942,10 +942,14 @@ if ((pw || "").length < 12) {
  
 
 
-// CAP: sequenze ovvie (abcd, 1234, qwer, ecc.)
-if (patterns.some(pt => pt.type === "CONSECUTIVE_PATTERN")) {
+// CAP: sequenze ovvie e quasi-ovvie
+if (
+  patterns.some(pt => pt.type === "CONSECUTIVE_PATTERN") ||
+  patterns.some(pt => pt.type === "NEAR_CONSECUTIVE_PATTERN")
+) {
   score = Math.min(score, 49);
 }
+
   const level = strengthLabel(score);
   return { score, level, patterns };
 
@@ -966,6 +970,8 @@ function generateFeedback(evaluation) {
   if (has("MISSING_DIGIT")) tips.push("Aggiungi almeno un numero.");
 
   if (has("CONSECUTIVE_PATTERN")) tips.push("Evita sequenze ovvie (es. 1234, abcd).");
+  if (has("NEAR_CONSECUTIVE_PATTERN")) tips.push("Evita quasi-sequenze (es. abcdfef, 123569): sono molto prevedibili.");
+
   if (has("REPEAT_3PLUS")) tips.push("Evita ripetizioni di caratteri (es. aaa).");
   else if (has("REPEAT_2")) tips.push("Evita caratteri uguali consecutivi (es. AA, 11).");
 
