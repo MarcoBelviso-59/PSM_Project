@@ -551,7 +551,8 @@ if (uniqueCount === 1) {
 const norm = normalize(p);
 
 // anno (1950–2039): copre quasi tutti i casi reali senza essere troppo aggressivo
-const hasYear = /\b(19[5-9]\d|20[0-3]\d)\b/.test(norm);
+const hasYear = /(?:^|[^0-9])(19[5-9]\d|20[0-3]\d)(?:$|[^0-9])/.test(norm);
+
 
 // data con separatori: 12/05/2001, 12-05-01, 12.05.2001
 const hasDateSep = /\b\d{1,2}[\/\-\.]\d{1,2}([\/\-\.]\d{2,4})?\b/.test(norm);
@@ -1184,6 +1185,26 @@ function validateFinal(pw, personalTokens = []) {
   // difesa: se arriva qualcosa di diverso da array, lo ignoro
   const tokens = Array.isArray(personalTokens) ? personalTokens : [];
 
+  // --- personal info anche con sostituzioni leet (0->o, 1->i, 3->e, 4->a, 5->s, 7->t, 8->b, 9->g) ---
+  const deLeet = (s) => normalize(s)
+    .replace(/0/g, "o")
+    .replace(/1/g, "i")
+    .replace(/3/g, "e")
+    .replace(/4/g, "a")
+    .replace(/5/g, "s")
+    .replace(/7/g, "t")
+    .replace(/8/g, "b")
+    .replace(/9/g, "g");
+
+  const pwDL = deLeet(pw);
+  const tokensDL = tokens.map(deLeet);
+
+  // se un token personale (>=3) appare nella password anche in forma leet, boccia
+  if (tokensDL.some(t => t.length >= 3 && pwDL.includes(t))) {
+    return { ok:false, msg:"Evita nome/cognome o parti dell’email (anche con sostituzioni tipo 0→o, 1→i)." };
+  }
+
+  
   const patterns = detectPatterns(pw, tokens);
     if (patterns.some(p => p.type === "PERSONAL_INFO")) {
     return { ok:false, msg:"Evita di includere nome/cognome o parti dell’email nella password." };
