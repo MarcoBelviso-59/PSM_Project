@@ -169,7 +169,7 @@ const SMALL_SETS_IT = {
     animali: new Set([
       "cane","gatto","cavallo","mucca","pecora","capra","maiale","pollo","coniglio",
       "leone","tigre","orso","lupo","volpe","cervo","elefante","giraffa","zebra",
-      "scimmia","delfino","balena","squalo","aquila","gufo","serpente","tartaruga"
+      "scimmia","delfino","balena","squalo","aquila","gufo","serpente","tartaruga","pettirosso"
     ]),
 
     // MOLTO cauti coi nomi: set minuscolo, e lo tratteremo sempre come "soft"
