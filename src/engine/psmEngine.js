@@ -658,7 +658,15 @@ const strongSingle =
   matchedTokens[0].length >= 6 &&
   nonAlpha <= 6;
 
-if ((matchedTokens.length >= 2 && coverage >= 0.70) || strongSingle) {
+// caso speciale (nomi): accetta anche 1 solo nome >=4 (es. "Mario2025!")
+const singleName =
+  matchedTokens.length === 1 &&
+  matchedSets.has("nomi") &&
+  coverage >= 0.85 &&
+  matchedTokens[0].length >= 4 &&
+  nonAlpha <= 6;
+
+if ((matchedTokens.length >= 2 && coverage >= 0.70) || strongSingle || singleName) {
   const severity = (hardHit && softHit) ? "mixed" : (hardHit ? "hard" : "soft");
 
   patterns.push({
@@ -669,7 +677,8 @@ if ((matchedTokens.length >= 2 && coverage >= 0.70) || strongSingle) {
     coverage: Number(coverage.toFixed(2)),
     alphaTotal
   });
- }
+}
+
 }
 
     // Passphrase "wordy": sembra testo naturale (2+ parole lunghe), anche se non sono nel dizionario
