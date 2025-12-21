@@ -1,139 +1,18 @@
-# Engine (PSM_Project) — logica di valutazione password
+# Engine (PSM_Project) — Modulo di valutazione password (estratto dalla UI)
 
-Questa cartella conterrà la **logica dell’engine** estratta da `src/web/app.js`.
-L’obiettivo è separare:
-- **UI** (DOM, eventi, aggiornamento grafico) → resta in `src/web/`
-- **Engine** (valutazione, pattern detection, feedback, validazione) → va in `src/engine/`
+Questa cartella contiene l’engine di valutazione password, estratto dal prototipo web in `src/web/`. Dopo T2 la logica non vive più in `src/web/app.js`: la UI si limita a raccogliere input, costruire `personalTokens`, invocare l’engine e mostrare output. L’engine è la single source of truth per score, livello, pattern e suggerimenti; di conseguenza è anche la base per API (DS2) ed esperimenti (DS3–DS5).
 
-> Nota: nel prototipo attuale la logica è in `app.js` e la UI invoca `evaluate(...)`, `generateFeedback(...)` e `validateFinal(...)`.
+File principale: `src/engine/psmEngine.js`. Il file definisce un oggetto globale `window.PSMEngine` per consentire l’uso diretto in browser (demo). In futuro l’engine potrà essere convertito a modulo, ma la consegna richiede prima di tutto stabilità e riuso.
 
----
+Responsabilità dell’engine: calcolare un punteggio (0–100) e un livello testuale, rilevare pattern deboli (sequenze, ripetizioni, parole comuni/dizionari, small-set, riferimenti riconoscibili, informazioni personali quando disponibili) e produrre suggerimenti coerenti. L’engine deve essere deterministico: stesso input → stesso output. L’engine non deve dipendere dal DOM: nessun `document`, nessun `getElementById`, nessun event listener.
 
-## 1) Contratto attuale (da rispettare)
+Input “personale”: il progetto usa `personalTokens`, un array di stringhe normalizzate derivato da nome, cognome ed email (token da local-part e dominio). `personalTokens` è opzionale: se assente o vuoto, l’engine valuta comunque la password senza penalità personali.
 
-### Input: `personalTokens`
-Nel prototipo, la penalità “info personali” usa `personalTokens`, che è un array di stringhe normalizzate.
-Viene costruito a partire da nome, cognome ed email usando:
-- `normalize(nome)`
-- `normalize(cognome)`
-- `emailParts(email)` (token da local part e dominio, min length 3)
+Interfaccia minima congelata (nomi e output stabili fino a consegna finale): l’engine espone `evaluate(password, personalTokens)` che restituisce `{ score, level, patterns }`, espone `generateFeedback({ score, level, patterns })` che restituisce un array di stringhe con suggerimenti, ed espone `validateFinal(password, personalTokens)` che restituisce `{ ok, msg }` per la verifica finale di accettazione (requisiti minimi e messaggio di errore). Il campo `level` usa la scala italiana già adottata nella UI: Molto debole, Debole, Discreta, Buona, Molto forte.
 
-Quindi il contratto dell’engine è:
+Formato output: `score` è un intero 0–100; `level` è una delle etichette sopra; `patterns` è una lista dei pattern rilevati dall’engine (utile sia per feedback che per debug/esperimenti). I suggerimenti mostrati all’utente non sono inventati dalla UI: derivano dai pattern tramite `generateFeedback`.
 
-- `evaluate(password, personalTokens)`
-- `validateFinal(password, personalTokens)` (o equivalente)
+Integrazione con la UI: `src/web/index.html` deve caricare prima `../engine/psmEngine.js` e poi `./app.js`. La UI costruisce `personalTokens` e invoca `evaluate` e `generateFeedback` su ogni input della password; in fase di conferma invoca `validateFinal` e abilita/disabilita la creazione account in base a esito, score minimo e match della conferma. L’estrazione è considerata corretta quando il comportamento della demo rimane identico rispetto alla versione precedente e l’engine non contiene riferimenti al DOM.
 
-> Anche se in futuro potremo passare un oggetto `context`, nel breve va mantenuta la compatibilità con `personalTokens`
-per non riscrivere UI/API/esperimenti.
-
-### Output livelli (5 livelli, già in uso)
-La UI mostra un livello testuale calcolato da `strengthLabel(score)`:
-
-- `Molto debole`
-- `Debole`
-- `Discreta`
-- `Buona`
-- `Molto forte`
-
-(Con descrizione associata `descMap`).
-
----
-
-## 2) Funzioni “engine” già presenti nel prototipo (da migrare in src/engine)
-
-Queste funzioni sono logica pura o quasi-pura e devono vivere nell’engine (non in UI):
-
-### Normalizzazione e token
-- `normalize(s)`
-- `deleetForDictionary(s)`
-- `emailParts(email)`
-- `tokenizeWords(pw)`
-
-### Dizionari / pattern
-- `dictionaryHits(pw)` (basata su `COMMON_WORDS`)
-- `hasConsecutivePattern(pw)` (sequenze alfabetiche/numeriche + righe tastiera)
-- `detectPatterns(pw, personalTokens)`  
-  Produce una lista di pattern (es. `TOO_SHORT`, `DICTIONARY`, `SMALL_SET_WORDS`, `POP_CULTURE`, ecc.)
-
-### Scoring e output
-Nel prototipo esistono **due livelli di valutazione**:
-
-1) `evaluatePassword(pw, personalTokens)`
-- calcola punteggio usando la logica “Baseline” (Basic16 vs Comprehensive8) + penalità base
-- ritorna: `{ score, level, tips }`
-
-2) `evaluate(pw, personalTokens)`
-- invoca `evaluatePassword(...)`
-- invoca `detectPatterns(...)`
-- applica CAP/limitazioni finali basate sui pattern (es. caps per dizionario, sequenze, pop culture, ecc.)
-- ritorna: `{ score, level, patterns }`
-
-> Questo doppio livello è già parte del comportamento attuale: va preservato.
-In fase di refactor si può decidere se mantenere entrambe o unificarle, ma senza cambiare output verso la UI.
-
-### Feedback e validazione finale
-- `generateFeedback(evaluation)`  
-  Converte `patterns` in lista di suggerimenti (stringhe), pensate per la UI.
-- `validateFinal(pw, personalTokens)`  
-  Applica requisiti minimi (lunghezza e classi caratteri) e soglia minima di accettazione.
-
----
-
-## 3) Formato output (come oggi)
-
-Per garantire compatibilità con la UI e con futuri moduli (API/esperimenti):
-
-### `evaluate(password, personalTokens)` → ritorna
-- `score` (0–100)
-- `level` (uno dei 5 livelli sopra)
-- `patterns` (array di oggetti pattern)
-
-### `evaluatePassword(password, personalTokens)` → ritorna
-- `score` (0–100)
-- `level`
-- `tips` (array string) *baseline*
-
-### `generateFeedback(evaluation)` → ritorna
-- array string (consigli/suggerimenti) derivati da `evaluation.patterns`
-
-### `validateFinal(password, personalTokens)` → ritorna
-- `{ ok: boolean, msg: string }`
-
----
-
-## 4) Regole critiche già implementate (da NON perdere)
-
-Nel prototipo, oltre alle penalità base, sono presenti CAP finali legati a pattern (esempi):
-- cap severi per password “ovvie” (carattere unico, bassa unicità, parole comuni esatte)
-- cap per parole di small-set (mesi/giorni/colori/città/squadre/animali/nomi)
-- cap per sequenze (abcd/1234/qwerty)
-- cap per POP_CULTURE
-- cap per lunghezze sotto soglia (es. < 12 non può arrivare oltre un certo score)
-
-Questi CAP sono parte della vostra logica attuale: l’engine deve applicarli in modo deterministico.
-
----
-
-## 5) Separation of concerns (regola pratica)
-
-### UI (src/web) deve fare solo:
-- leggere input utente
-- costruire `personalTokens`
-- chiamare `evaluate(...)`
-- chiamare `generateFeedback(...)`
-- aggiornare DOM (bar, label, lista suggerimenti)
-- abilitare/disabilitare “Crea” in base a `validateFinal(...)` + match conferma
-
-### Engine (src/engine) deve fare:
-- tutto ciò che produce score/level/patterns/tips
-- senza dipendere dal DOM (nessun `document.getElementById`, nessun event listener)
-
----
-
-## 6) Definition of Done (per considerare l’estrazione completata)
-L’estrazione in `src/engine/` è “finita” quando:
-1) `src/web/` continua a funzionare identico (stesso comportamento e stessi output)
-2) `src/web/app.js` contiene solo “wiring UI” (eventi/DOM) e NON regole di scoring
-3) l’engine espone almeno: `evaluate`, `generateFeedback`, `validateFinal`
-4) README aggiornato se cambiano soglie, livelli o pattern
+Verifica rapida (regressione): aprire la demo, inserire dati utente, testare almeno quattro casi rappresentativi: una sequenza prevedibile, una parola comune con variazioni, una password che contiene un token personale, e una password lunga e varia; verificare che punteggio/livello/suggerimenti siano coerenti e che il bottone “Crea account” si abiliti solo quando `validateFinal` è ok, lo score supera la soglia minima e la conferma coincide.
 
