@@ -107,6 +107,8 @@ function updateMeter() {
     finalCheck.style.display = "none";
     finalCheck.textContent = "";
   }
+  const canCreate = v.ok && evaluation.score >= 40 && conf.ok;
+  btnCrea.disabled = !canCreate;
 }
 
 btnContinua.addEventListener("click", () => {
