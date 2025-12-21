@@ -1,0 +1,123 @@
+<!doctype html>
+<html lang="it">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Password Strength Meter</title>
+  <link rel="stylesheet" href="./styles.css" />
+</head>
+<body>
+
+  <!-- TITOLO FUORI DAL MODULO -->
+  <header class="page-header" aria-label="Intestazione pagina">
+    <h1 class="page-title">Password Strength Meter</h1>
+    <p class="page-subtitle">Registrazione a due step con valutazione password 0–100 in tempo reale.</p>
+  </header>
+
+  <main class="card" role="main" aria-live="polite">
+    <!-- STEP 1 -->
+    <section id="step1" aria-label="Step 1: credenziali">
+      <h2 class="card-title">Registrazione</h2>
+      <p class="card-subtitle">Inserire credenziali di accesso</p>
+
+      <div class="grid">
+        <div>
+          <label for="nome">Nome</label>
+          <input id="nome" autocomplete="given-name" placeholder="Es. Mario" />
+        </div>
+        <div>
+          <label for="cognome">Cognome</label>
+          <input id="cognome" autocomplete="family-name" placeholder="Es. Rossi" />
+        </div>
+      </div>
+
+      <div class="grid-1" style="margin-top:14px">
+        <div>
+          <label for="email">Email</label>
+          <input id="email" type="email" autocomplete="email" placeholder="Es. mario.rossi@email.it" />
+
+          <div id="errStep1" class="callout callout-error" style="display:none" role="alert"></div>
+
+          <div class="callout callout-info" style="margin-top:10px">
+            Consiglio: usa un’email valida. La password verrà penalizzata se contiene nome/cognome/parti dell’email.
+          </div>
+        </div>
+      </div>
+
+      <div class="row">
+        <span class="hint">Compila tutti i campi prima di continuare.</span>
+        <button id="btnContinua" type="button">Continua</button>
+      </div>
+    </section>
+
+    <!-- STEP 2 -->
+    <section id="step2" style="display:none" aria-label="Step 2: password">
+
+      <!-- ✅ Dati inseriti “abbelliti” -->
+      <div class="user-pill" aria-label="Riepilogo credenziali inserite">
+        <div class="user-pill__icon" aria-hidden="true">👤</div>
+        <div class="user-pill__text">
+          <div class="user-pill__title">Dati inseriti</div>
+          <div class="user-pill__value mono" id="who"></div>
+        </div>
+      </div>
+
+      <div class="divider"></div>
+
+      <div class="grid-1">
+        <div>
+          <label for="pw">Crea password</label>
+          <div class="password-wrap">
+            <input id="pw" type="password" autocomplete="new-password" placeholder="Crea una password…" />
+            <button type="button" id="togglePw" class="toggle-pw" aria-label="Mostra o nascondi password" title="Mostra / nascondi password">👁️</button>
+          </div>
+        </div>
+
+        <div>
+          <label for="pw2">Conferma password</label>
+          <div class="password-wrap">
+            <input id="pw2" type="password" autocomplete="new-password" placeholder="Ripeti la password…" />
+            <button type="button" id="togglePw2" class="toggle-pw" aria-label="Mostra o nascondi conferma password" title="Mostra / nascondi password">👁️</button>
+          </div>
+
+          <div id="matchMsg" class="callout" style="display:none" role="status"></div>
+        </div>
+
+        <div class="meterWrap">
+          <div class="meterHead">
+            <div class="left">
+              <span class="score">Punteggio: <span id="score">0</span>/100</span>
+              <span class="badge" id="label" data-level="Molto debole">Molto debole</span>
+            </div>
+          </div>
+
+          <div class="hint" id="strengthDesc"></div>
+
+          <div class="bar" aria-label="Indicatore forza password">
+            <div class="fill" id="fill"></div>
+          </div>
+
+          <ul id="tips"></ul>
+
+          <div id="finalCheck" class="callout callout-error" style="margin-top:12px;display:none" role="alert"></div>
+
+          <div class="row">
+            <button id="btnBack" class="ghost" type="button">Indietro</button>
+            <button id="btnCrea" type="button" disabled>Crea account</button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- STEP 3 (SUCCESS) -->
+    <section id="step3" class="success-screen" style="display:none" aria-label="Account creato">
+      <div class="success-icon" aria-hidden="true">✔</div>
+      <h2 class="success-title">Account creato</h2>
+      <p class="success-subtitle">La registrazione è andata a buon fine.</p>
+      <button id="btnRestart" type="button">Torna all’inizio</button>
+    </section>
+  </main>
+
+  <script src="./app.js"></script>
+</body>
+</html>
