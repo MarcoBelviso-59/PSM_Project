@@ -547,6 +547,23 @@ if (uniqueCount === 1) {
   if (!hasDigit) patterns.push({ type: "MISSING_DIGIT" });
   if (!hasSym)   patterns.push({ type: "MISSING_SYMBOL" });
 
+  // --- YEAR / DATE pattern (anni e date molto prevedibili) ---
+const norm = normalize(p);
+
+// anno (1950–2039): copre quasi tutti i casi reali senza essere troppo aggressivo
+const hasYear = /\b(19[5-9]\d|20[0-3]\d)\b/.test(norm);
+
+// data con separatori: 12/05/2001, 12-05-01, 12.05.2001
+const hasDateSep = /\b\d{1,2}[\/\-\.]\d{1,2}([\/\-\.]\d{2,4})?\b/.test(norm);
+
+// data “compatta” 8 cifre tipo 01011990
+const hasDateCompact = /\b\d{8}\b/.test(norm);
+
+if (hasYear || hasDateSep || hasDateCompact) {
+  patterns.push({ type: "YEAR_OR_DATE" });
+}
+
+
   // pattern noti
   if (hasConsecutivePattern(p)) {
   patterns.push({ type: "CONSECUTIVE_PATTERN" });
@@ -889,6 +906,14 @@ function evaluate(pw, personalTokens = []) {
   score = Math.min(score, cap);
 }
 
+  if ((pw || "").length < 12 && patterns.some(pt => pt.type === "YEAR_OR_DATE")) {
+  score = Math.min(score, 49);
+}
+if ((pw || "").length >= 12 && patterns.some(pt => pt.type === "YEAR_OR_DATE")) {
+  score = Math.min(score, 59);
+}
+
+
     // Step F: CAP per frasi composte da più parole di dizionario (es. CiaoMondo2025!)
   const md = patterns.find(pt => pt.type === "MULTI_DICTIONARY_WORDS");
   if (md) {
@@ -1016,6 +1041,8 @@ function generateFeedback(evaluation) {
     if (has("POP_CULTURE")) {
     tips.push("Password prevedibile: contiene riferimenti pop-culture (personaggi/serie/film) spesso usati nelle password. Evita nomi famosi + anno/simboli.");
   }
+
+  if (has("YEAR_OR_DATE")) tips.push("Evita anni o date (es. 1998, 2024, 12/05): sono tra i primi tentativi.");
 
 
 
