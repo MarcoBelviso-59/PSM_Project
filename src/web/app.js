@@ -94,12 +94,9 @@ function updateMeter() {
   const v = validateFinal(pw.value, personalTokens);
   const conf = updateConfirmUI();
 
-  if (!v.ok) {
+    if (!v.ok) {
     finalCheck.style.display = "block";
     finalCheck.textContent = v.msg;
-  } else if (evaluation.score < 40) {
-    finalCheck.style.display = "block";
-    finalCheck.textContent = "Password troppo debole (minimo: Discreta).";
   } else if (!conf.ok) {
     finalCheck.style.display = "block";
     finalCheck.textContent = "Conferma password non valida: devono coincidere.";
@@ -107,8 +104,11 @@ function updateMeter() {
     finalCheck.style.display = "none";
     finalCheck.textContent = "";
   }
-  const canCreate = v.ok && evaluation.score >= 40 && conf.ok;
+
+  // La policy (soglie, info personali, ecc.) è decisa SOLO dall'engine via validateFinal()
+  const canCreate = v.ok && conf.ok;
   btnCrea.disabled = !canCreate;
+
 }
 
 btnContinua.addEventListener("click", () => {
