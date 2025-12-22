@@ -83,10 +83,7 @@ function buildPersonalTokens(body) {
     const norm = engine.normalize(raw);
     if (norm) tokens.push(norm);
   }
-} else if (body.user && typeof body.user === "object") {
-  // lascia questo ramo identico
-  ...
-}
+
 
 
    else if (body.user && typeof body.user === "object") {
@@ -167,34 +164,15 @@ app.post("/api/evaluate", requireApiKeyIfConfigured, handleEvaluate);
 app.post("/evaluatePassword", requireApiKeyIfConfigured, handleEvaluate);
 
 
-  if (typeof password !== "string") {
-    return res.status(400).json({ error: "BadRequest", message: "`password` deve essere una stringa." });
-  }
+  app.post("/api/validate", requireApiKeyIfConfigured, (req, res) => {
 
-  const personalTokens = buildPersonalTokens(body);
-
-  try {
-    const evaluation = engine.evaluate(password, personalTokens);
-    const suggestions = engine.generateFeedback(evaluation);
-
-    return res.json({
-      score: evaluation.score,
-      level: evaluation.level,
-      patterns: evaluation.patterns,
-      suggestions
-    });
-  } catch (e) {
-    return res.status(500).json({ error: "InternalError", message: "Errore interno durante la valutazione." });
-  }
-});
-
-app.post("/api/validate", (req, res) => {
   const body = req.body || {};
-  const password = body.password;
+const password = body.password;
 
-  if (typeof password !== "string") {
-    return res.status(400).json({ error: "BadRequest", message: "`password` deve essere una stringa." });
-  }
+const vPw = validatePasswordField(password);
+if (!vPw.ok) {
+  return res.status(400).json({ error: "BadRequest", message: vPw.message });
+}
 
   const personalTokens = buildPersonalTokens(body);
 
