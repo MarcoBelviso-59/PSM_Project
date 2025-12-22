@@ -72,22 +72,22 @@ function emailLooksValid(email) {
 
 function buildPersonalTokens(body) {
   const tokens = [];
+
+  // 1) Priorità: personalTokens (se forniti dal client)
   if (Array.isArray(body.personalTokens)) {
-  // limiti DS2 (non mutiamo body)
-  const sliced = body.personalTokens.slice(0, MAX_TOKENS);
+    // limiti DS2 (non mutiamo body)
+    const sliced = body.personalTokens.slice(0, MAX_TOKENS);
 
-  for (const t of sliced) {
-    const raw = String(t);
-    if (raw.length > MAX_TOKEN_LEN) continue;
+    for (const t of sliced) {
+      const raw = String(t);
+      if (raw.length > MAX_TOKEN_LEN) continue;
 
-    const norm = engine.normalize(raw);
-    if (norm) tokens.push(norm);
+      const norm = engine.normalize(raw);
+      if (norm) tokens.push(norm);
+    }
   }
-
-
-
-   else if (body.user && typeof body.user === "object") {
-    // 2) Altrimenti: derivazione da user
+  // 2) Altrimenti: derivazione da user
+  else if (body.user && typeof body.user === "object") {
     const { firstName, lastName, email } = body.user;
 
     if (isNonEmptyString(firstName)) tokens.push(engine.normalize(firstName));
@@ -99,7 +99,7 @@ function buildPersonalTokens(body) {
     }
   }
 
-  // Filtri minimi e deduplica (stile "robusto", senza cambiare logica engine)
+  // Filtri minimi e deduplica
   const uniq = [];
   const seen = new Set();
 
@@ -113,6 +113,8 @@ function buildPersonalTokens(body) {
 
   return uniq;
 }
+
+
 
 app.get("/health", (req, res) => {
   res.json({ ok: true, service: "psm-api" });
