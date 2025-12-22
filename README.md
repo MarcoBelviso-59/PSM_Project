@@ -1,6 +1,6 @@
 # PSM_Project — Password Strength Meter (UI + Engine + API)
 
-Progetto di Ingegneria del Software (A.A. 2025/2026) per la realizzazione di un **Password Strength Meter** con feedback in tempo reale, basato su euristiche e penalità per pattern deboli (sequenze, ripetizioni, dizionari e informazioni personali quando disponibili). Questo README sostituisce la sezione “Da completare” del vecchio stato progetto, aggiornandola con quanto effettivamente implementato oggi. :contentReference[oaicite:0]{index=0}
+Progetto di Ingegneria del Software (A.A. 2025/2026) per la realizzazione di un **Password Strength Meter** con feedback in tempo reale, basato su euristiche e penalità per pattern deboli (sequenze, ripetizioni, dizionari e informazioni personali quando disponibili). Questo README è aggiornato al 22/12/2025
 
 ## Team
 - Belviso M.
