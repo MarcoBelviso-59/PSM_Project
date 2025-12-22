@@ -1,29 +1,43 @@
 # API (DS2) — Password Evaluation Service (PSM_Project)
 
-Questa cartella contiene (o conterrà) l’API del progetto, il cui unico compito è esporre via HTTP le funzionalità dell’engine di valutazione password. L’API non deve replicare né riscrivere le regole del meter: la “verità” sta nell’engine in `src/engine/`, e l’API si limita a validare l’input, derivare (se necessario) i token personali, invocare l’engine e restituire la risposta in un formato stabile e utile anche per esperimenti e debug.
+Questa cartella contiene l’API del progetto e implementa lo scenario DS2: valutazione e validazione password via HTTP usando come single source of truth l’engine in `src/engine/psmEngine.js`. L’API non replica né riscrive regole di scoring: valida input e opzioni, costruisce i token personali quando disponibili, invoca l’engine e restituisce una risposta deterministica. L’engine espone `evaluate(password, personalTokens)` (ritorna score/level/patterns), `generateFeedback(evaluation)` (ritorna suggerimenti) e `validateFinal(password, personalTokens)` (ritorna `{ ok, msg }`); l’API orchestra questi metodi.
 
-Il contratto lato engine che l’API deve rispettare è il seguente: l’engine fornisce una valutazione tramite `evaluate(password, personalTokens)` restituendo sempre un oggetto con `score` (0–100), `level` (uno dei livelli testuali usati dal prototipo) e `patterns` (lista dei pattern rilevati); fornisce i suggerimenti tramite `generateFeedback(evaluation)` restituendo un array di stringhe; e fornisce l’esito di accettazione finale tramite `validateFinal(password, personalTokens)` restituendo `{ ok, msg }`. L’input personale del progetto è `personalTokens`, cioè un array di stringhe normalizzate derivato da nome, cognome ed email, usato per penalizzare password che contengono informazioni personali. Per questo motivo, l’API deve accettare un payload JSON che contenga sempre `password` (obbligatoria, stringa) e che possa contenere opzionalmente `personalTokens` (array di stringhe) e/o `user` (oggetto con `firstName`, `lastName`, `email`). Se nel payload sono presenti sia `personalTokens` sia `user`, allora `personalTokens` ha priorità; se `personalTokens` non è presente ma `user` sì, l’API deve derivare i token da `user` con la stessa filosofia del prototipo (normalizzazione, tokenizzazione email, esclusione dei token troppo corti).
+La request accetta JSON con `password` obbligatoria (stringa non vuota), più opzionalmente `personalTokens` (array di stringhe) oppure `user` come oggetto `{ firstName, lastName, email }`. La priorità è: se è presente `personalTokens` viene usato quello; altrimenti, se è presente `user`, i token vengono derivati da nome/cognome/email (inclusi token estratti dalla email). L’oggetto `options` è opzionale e supporta `includeFeedback` (boolean): se `true` la risposta include anche `suggestions`, se assente o `false` la risposta non include suggerimenti. L’API applica limiti anti-abuso a lunghezza massima della password, quantità massima di token e lunghezza massima per token.
 
-L’endpoint principale coerente con DS2 è `POST /api/evaluate`, pensato per l’uso “real-time friendly”: riceve il payload, invoca l’engine e restituisce una risposta JSON con `score`, `level`, `patterns` e `suggestions`, dove `suggestions` è sempre ottenuto chiamando `generateFeedback({ score, level, patterns })` e non costruito “a mano” dall’API. Un esempio di request valido (con campi opzionali nello stesso JSON) è `{ "password": "P@ssw0rdExample!", "personalTokens": ["mario","rossi","example","gmail"], "user": { "firstName": "Mario", "lastName": "Rossi", "email": "mario.rossi@example.com" } }`, nel quale l’API deve usare i `personalTokens` perché presenti; un esempio di response è `{ "score": 72, "level": "Buona", "patterns": [ { "code": "LOWER_OK" }, { "code": "UPPER_OK" } ], "suggestions": [ "Aumenta la lunghezza per migliorare ulteriormente la robustezza.", "Evita sequenze prevedibili." ] }`. È inoltre previsto un endpoint di supporto `POST /api/validate`, che accetta lo stesso payload e restituisce esclusivamente l’esito di accettazione finale coerente con `validateFinal`, per esempio `{ "ok": true, "msg": "OK" }` oppure `{ "ok": false, "msg": "La password deve contenere almeno una maiuscola, una minuscola, una cifra e un simbolo." }`. La gestione errori minima deve essere rigorosa: l’API deve rispondere 400 se `password` manca o non è una stringa, o se il payload non è JSON valido; deve rispondere 500 per errori interni senza esporre stack trace o dettagli sensibili.
+Gli endpoint DS2 sono: `POST /evaluatePassword` che valuta la password; `POST /api/evaluate` che è un alias retro-compatibile con lo stesso comportamento e schema; `POST /api/validate` che esegue la validazione finale coerente con `validateFinal`. La risposta di valutazione (`/evaluatePassword` e `/api/evaluate`) contiene sempre `score` (0–100), `level` (scala italiana), `patterns` (lista dei pattern rilevati dal motore) e contiene `suggestions` solo quando `options.includeFeedback=true`. La risposta di validazione (`/api/validate`) contiene sempre `{ ok, msg }`.
 
-Dal punto di vista non funzionale, l’API deve essere deterministica (stesso input → stesso output, perché dipende dall’engine), rapida (compatibile con invocazioni frequenti durante la digitazione), e rispettosa della riservatezza: se viene introdotto logging, non deve memorizzare password in chiaro, ma al massimo informazioni tecniche aggregate. Quando si passerà all’implementazione, la scelta tecnologica può restare minimale e coerente con il prototipo JavaScript (ad esempio Node.js + Express), e l’eventuale CORS va gestito solo se UI e API sono eseguite su origini diverse. Collegamenti nel progetto: la UI in `src/web/` può continuare a chiamare l’engine direttamente (per demo locale) oppure chiamare l’API; il modulo `src/experiments/` può invocare engine o API, ma i risultati devono rimanere equivalenti e confrontabili perché derivano dallo stesso contratto.
+Error handling: l’API risponde 400 `BadRequest` quando `password` manca, non è stringa o è vuota (solo spazi), quando `options` è malformato, o quando `options.includeFeedback` non è boolean; il formato è `{ "error": "BadRequest", "message": "..." }`. In caso di errore interno risponde 500 `InternalError` con `{ "error": "InternalError", "message": "Errore interno durante la valutazione." }` oppure `{ "error": "InternalError", "message": "Errore interno durante la validazione." }`. Nota PowerShell: `Invoke-RestMethod` può sollevare eccezioni su risposte 4xx/5xx, ma il body JSON contiene comunque `{ error, message }`.
 
-Esecuzione rapida (Windows PowerShell):
-- Avvio server:
-  - `cd src\api`
-  - `npm.cmd install`
-  - `npm.cmd start`
+Auth “se prevista”: se è impostata la variabile d’ambiente `PSM_API_KEY`, l’API richiede l’header `x-api-key: <valore>` e risponde 401 se manca, 403 se è errato; se `PSM_API_KEY` non è impostata, non richiede autenticazione.
 
-- Test health:
-  - `Invoke-RestMethod http://localhost:3000/health`
+Avvio (Windows PowerShell) dalla root repository: entra in `src\api`, installa dipendenze e avvia il server (porta e URL vengono mostrati in console). Per i test, puoi usare `Invoke-RestMethod` oppure qualsiasi client HTTP. L’esempio seguente riassume in un’unica sezione: avvio, chiamata a `/evaluatePassword` senza feedback, chiamata a `/evaluatePassword` con feedback, chiamata all’alias `/api/evaluate` e chiamata a `/api/validate`, includendo anche un esempio di payload e gli output attesi (a livello di campi).
 
-- Test evaluate:
-  - `Invoke-RestMethod -Method Post http://localhost:3000/api/evaluate -ContentType "application/json" -Body '{"password":"abcdfeff12"}'`
+```powershell
+# Avvio (esegui in un terminale)
+cd src\api
+npm.cmd install
+npm.cmd start
 
-- Test evaluate con contesto:
-  - `Invoke-RestMethod -Method Post http://localhost:3000/api/evaluate -ContentType "application/json" -Body '{"password":"Mario2025!","user":{"firstName":"Mario","lastName":"Rossi","email":"mario.rossi@gmail.com"}}'`
+# 1) POST /evaluatePassword (senza feedback: niente "suggestions" in risposta)
+$body1 = @{ password="Roma2025!"; personalTokens=@("mario","rossi","mario.rossi","example") } | ConvertTo-Json
+Invoke-RestMethod -Method Post -Uri http://localhost:3000/evaluatePassword -ContentType "application/json" -Body $body1
 
-Nota: su PowerShell le risposte 4xx possono generare eccezioni; per vedere il codice:
-`try { Invoke-RestMethod ... } catch { $_.Exception.Response.StatusCode }`
+# 2) POST /evaluatePassword (con feedback: include "suggestions" in risposta)
+$body2 = @{ password="Roma2025!"; personalTokens=@("mario","rossi","mario.rossi","example"); options=@{ includeFeedback=$true } } | ConvertTo-Json
+Invoke-RestMethod -Method Post -Uri http://localhost:3000/evaluatePassword -ContentType "application/json" -Body $body2
 
+# 3) POST /api/evaluate (alias retro-compatibile, stesso schema di /evaluatePassword)
+$body3 = @{ password="Roma2025!"; personalTokens=@("mario") } | ConvertTo-Json
+Invoke-RestMethod -Method Post -Uri http://localhost:3000/api/evaluate -ContentType "application/json" -Body $body3
 
+# 4) POST /api/validate (validazione finale: ritorna { ok, msg })
+$body4 = @{ password="Mr0ss12024!"; personalTokens=@("rossi") } | ConvertTo-Json
+Invoke-RestMethod -Method Post -Uri http://localhost:3000/api/validate -ContentType "application/json" -Body $body4
+
+# Note attese:
+# - /evaluatePassword e /api/evaluate ritornano sempre: score (0–100), level, patterns
+# - "suggestions" compare solo se options.includeFeedback = true
+# - /api/validate ritorna { ok: true/false, msg: "..." }
+# - in caso di input non valido l’API risponde 400 BadRequest con { error, message }
+
+Coerenza: UI, engine e API devono rimanere allineati; la policy finale sta in validateFinal, e lo scoring/patterns in evaluate. L’API non introduce soglie proprie: valida input/opzioni e invoca l’engine.
