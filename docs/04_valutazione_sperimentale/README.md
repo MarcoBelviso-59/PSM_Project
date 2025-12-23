@@ -1,22 +1,149 @@
-# Valutazione sperimentale (PSM_Project) — Metodologia, baseline, metriche e struttura risultati
+# Valutazione sperimentale (PSM_Project) — Metodologia, baseline, metriche, riproducibilità
 
-Questa cartella raccoglie la metodologia sperimentale del progetto: come vengono costruiti i dataset, quali baseline vengono usate per il confronto, quali metriche vengono calcolate e come vengono presentati i risultati (tabelle e grafici). Lo scopo non è “fare ricerca”, ma fornire una valutazione credibile e ripetibile del Password Strength Meter sviluppato, mostrando che le scelte dell’engine sono coerenti, che i casi ovvi vengono penalizzati, che non esistono sovrastime sistematiche, e che il comportamento del meter è ragionevole rispetto a una o più baseline selezionate. Questa sezione è pensata per essere direttamente riutilizzabile nella relazione finale.
+Questa cartella documenta come valutiamo sperimentalmente il Password Strength Meter (PSM), in modo che i risultati siano ripetibili (stessi input → stessi output a parità di seed), tracciabili (dataset, parametri, versione, runId) e riusabili nella relazione e nella presentazione finale.
 
-Il presupposto architetturale è che l’engine in `src/engine/` sia la single source of truth della valutazione; l’API in `src/api/` e il runner in `src/experiments/` sono modalità diverse di consumo dello stesso engine. Di conseguenza, la valutazione sperimentale deve basarsi su output prodotti dall’engine (e, se previsto, da baseline adapter separati) e deve essere ripetibile: stesso dataset e stesse opzioni → stessi risultati esportati. Tutti i risultati sperimentali devono derivare dagli export prodotti da `src/experiments/` (JSON ricco e CSV tabellare), evitando manipolazioni manuali non tracciate.
+Aggiornato al 23/12/2025.
 
-Obiettivi sperimentali del progetto: verificare che il meter distingua in modo sensato password deboli e forti, che penalizzi pattern prevedibili (sequenze, ripetizioni, dizionari e small-set), che applichi correttamente penalità su informazioni personali quando disponibili (tramite `personalTokens`), e che non assegni punteggi massimi a password riconoscibili o facilmente intuibili. Un obiettivo secondario, ma importante in un contesto didattico, è verificare la coerenza dei feedback: quando il punteggio è alto, i suggerimenti devono essere pochi e non contraddittori; quando il punteggio è basso, i suggerimenti devono essere espliciti e utili. Un ulteriore obiettivo è misurare quanto spesso il nostro meter diverge dalle baseline e in quali classi di casi avviene la divergenza, così da motivare eventuali scelte correttive.
+## Presupposto (single source of truth)
+Tutta la logica di scoring/pattern/policy vive nell’engine:
+- src/engine/psmEngine.js
 
-Dataset: per evitare problemi di privacy e per mantenere ripetibilità, la valutazione deve preferire dataset sintetici o costruiti ad hoc, con una composizione controllata di categorie. Il dataset va documentato indicando: numero totale di casi, percentuali per categoria, regole di generazione e (se presente) contesto utente associato. La struttura consigliata è includere almeno cinque macro-categorie: (1) password molto deboli (sequenze numeriche/alfabetiche, tastiera, ripetizioni estreme), (2) password “comuni” (parole note e variazioni banali con numeri/simboli), (3) password basate su small-set (mesi, giorni, colori, città, nomi, animali, squadre) e/o riferimenti riconoscibili, (4) password “miste” ma con pattern strutturati (ripetizione di blocchi, formato prevedibile), (5) password forti (lunghe, varie, senza pattern evidenti). In aggiunta, una parte del dataset deve includere contesto personale (nome/cognome/email) per verificare la penalità basata su `personalTokens`; in questo subset, vanno inclusi sia casi in cui la password contiene token personali, sia casi “di controllo” in cui non li contiene, per dimostrare che la penalità non è applicata quando non c’è match. Se vengono usate password reali (sconsigliato), i file non devono essere versionati in repo e gli export devono evitare di salvare password in chiaro; in tal caso questa cartella deve contenere solo descrizioni aggregate e risultati anonimi.
+La sperimentazione NON deve “aggiustare” manualmente risultati o soglie: deve misurare ciò che l’engine produce e confrontarlo con una baseline.
 
-Baseline: la sperimentazione deve confrontare il nostro PSM con almeno una baseline selezionata dal team. La baseline può essere uno strumento esterno o una metrica nota, ma deve essere giustificata (perché è un riferimento sensato) e deve essere utilizzata in modo consistente sullo stesso dataset. Operativamente, l’integrazione con la baseline avviene tramite un adapter nel runner di `src/experiments/`, che calcola per ogni password un valore baseline (punteggio o classe) e permette di registrare differenze (delta) e disaccordi. È importante definire in anticipo come “normalizzare” la baseline: se la baseline produce una classe e non uno score, va definita una mappatura; se produce uno score su scala diversa, va normalizzato in 0–100 o riportato separatamente. La scelta finale della baseline deve essere riportata qui con una descrizione breve di cosa misura e di quali limiti noti ha; la relazione finale includerà anche una discussione critica delle differenze osservate.
+## Obiettivi sperimentali
+1) Verificare che lo score del PSM sia coerente con intuizioni di sicurezza:
+   - password ovvie/strutturate → score basso
+   - password lunghe e varie → score alto
 
-Metriche: la valutazione non deve ridursi a “media dello score”. Le metriche minime consigliate sono: distribuzione degli score del nostro meter per categoria (istogrammi o boxplot per categorie), percentuale di password accettate da `validateFinal` per categoria (utile per vedere se la policy è troppo permissiva o troppo restrittiva), frequenza dei pattern rilevati (quali pattern compaiono di più e in quali categorie), e analisi dei casi limite (top-10 password con score più alto ma appartenenti a categorie “rischiose”, e bottom-10 in categorie teoricamente forti). Per il confronto con baseline, le metriche minime sono: delta medio e mediano (PSM score - baseline score) sul dataset e per categoria, percentuale di disaccordo sopra una soglia (es. |delta| >= 20), e lista dei casi di massimo disaccordo con spiegazione qualitativa (perché il nostro meter penalizza o premia diversamente). Se il progetto usa cap specifici (ad esempio per password corte o pattern riconoscibili), va riportato un controllo esplicito: quanti casi vengono “limitati” dal cap e in quali categorie, perché questo dimostra che il cap non è arbitrario ma risponde a un fenomeno osservabile.
+2) Verificare che la presenza di pattern (sequenze, ripetizioni, small-set, token personali) venga:
+   - rilevata in patterns
+   - riflessa in penalità/limitazioni di score
+   - spiegata da suggerimenti coerenti (generateFeedback)
 
-Procedura sperimentale: la procedura deve essere descritta in modo ripetibile. Si seleziona un dataset (o più dataset), si esegue il runner in `src/experiments/` specificando opzioni e baseline attive, e si salvano gli output in una cartella di run con metadati (data/ora, nome dataset, numero casi, configurazione). Le analisi e i grafici devono essere generati a partire dagli export (CSV/JSON) e salvati in questa cartella `docs/04_valutazione_sperimentale/` insieme a un breve commento interpretativo. Ogni grafico o tabella riportato in relazione deve avere un riferimento chiaro al run da cui è derivato (almeno per data/ora e nome dataset), così da mantenere tracciabilità.
+3) Confrontare il comportamento del PSM con una baseline zxcvbn:
+   - dove concordiamo (buon segnale)
+   - dove divergemmo (da discutere e motivare nella relazione)
 
-Output attesi in questa cartella: (1) un documento breve che descriva dataset e composizione (può essere questa pagina aggiornata con numeri reali), (2) una cartella `results/` con export significativi (almeno un run completo, con CSV/JSON e metadati), (3) una cartella `figures/` con grafici principali (distribuzione score globale e per categoria, confronto baseline per categoria, casi limite), (4) una sezione “Discussione” con osservazioni chiave e minacce alla validità. Le osservazioni chiave devono includere almeno: esempi di casi penalizzati correttamente (sequenze, dizionario, small-set, info personali), esempi di casi forti riconosciuti come tali (lunghi e vari), e casi di disaccordo con baseline spiegati senza ambiguità.
+## Baseline
+La baseline usata è:
+- src/experiments/baselines/zxcvbn.js
 
-Minacce alla validità: vanno riportate in modo onesto e sintetico. Le principali minacce sono: rappresentatività del dataset (dataset sintetico può non riflettere comportamenti reali), scelta e normalizzazione della baseline (diverse baseline misurano proprietà diverse), sensibilità della taratura (soglie e cap possono cambiare distribuzioni), e interpretazione dei risultati (uno score non è una misura assoluta di sicurezza). L’obiettivo è mostrare che il team è consapevole dei limiti e che i risultati sono comunque utili per motivare le scelte implementative.
+Il wrapper normalizza il punteggio zxcvbn (0..4) in 0..100 per confronto diretto col PSM.
 
-Criterio di completamento della valutazione sperimentale: questa sezione è considerata “pronta” quando esiste almeno un run completo documentato (dataset descritto, export CSV/JSON salvati, grafici prodotti, confronto baseline disponibile), e quando è possibile estrarre da qui una sezione coerente per la relazione finale includendo metodologia, risultati e discussione in modo tracciabile e ripetibile.
+## Dataset: principi e formato
 
+### Principi
+- Niente dati reali o sensibili: usare dataset sintetici o pubblici senza PII.
+- Dataset ripetibili: usare seed quando si generano dataset sintetici.
+- Categorie che coprono scenari rilevanti:
+  - sequenze alfabetiche/numeriche
+  - pattern tastiera
+  - ripetizioni e blocchi ripetuti
+  - small-set (mesi, giorni, colori, città, nomi, animali, squadre, ecc.)
+  - password “random” forti (alta entropia)
+  - password lunghe con token personali (nome/cognome/parti email)
+
+### Formato
+I dataset sono array JSON di record (vedi src/experiments/datasets/sample.json). Ogni record può contenere:
+- id: identificatore
+- category: etichetta categoria
+- password: stringa password
+- personalTokens: array opzionale di token personali da passare all’engine
+
+Esempio (formato dataset):
+
+    [
+      { "id": "1", "category": "random_strong", "password": "V9#kL2p@Qw7!zR3", "personalTokens": [] },
+      { "id": "2", "category": "contains_name", "password": "MarioRossi2026!", "personalTokens": ["mario","rossi"] }
+    ]
+
+## Procedura sperimentale (ripetibile)
+
+### 1) Generazione dataset (consigliata)
+Genera un dataset sintetico e ripetibile:
+
+    cd src/experiments
+    npm install
+    node tools/generate_dataset.js datasets/dataset_v1.json 20 --seed 12345
+
+Dove:
+- datasets/dataset_v1.json = file output
+- 20 = quantità per categoria (aumenta per più significatività)
+- --seed 12345 = ripetibilità
+
+### 2) Esecuzione run
+Esegui il runner confrontando PSM vs baseline:
+
+    node run.js --in datasets/dataset_v1.json --out outputs/run_dataset_v1_local --redact-password --seed 12345
+
+Parametri chiave:
+- --seed: fondamentale per confronti nel tempo
+- --redact-password: consigliato per evitare che le password finiscano in output/relazione
+
+### 3) Output del run (fonte ufficiale dei risultati)
+Ogni run produce una cartella:
+- src/experiments/outputs/<runId>/
+
+File tipici:
+- meta.json (tracciabilità: timestamp, seed, conteggi, note/aggregati)
+- results.json (raw, completo)
+- results.csv (separatore ,)
+- results.tsv (separatore tab)
+- results_excel.csv (separatore ;, comodo per Excel IT)
+
+Nota importante: questa cartella docs/04_valutazione_sperimentale dovrebbe contenere solo materiali “di lettura” (metodologia, grafici, sintesi), mentre i dati grezzi stanno in src/experiments/outputs/.
+
+## Metriche e letture consigliate (non solo “media score”)
+Per evitare conclusioni fuorvianti, non basta riportare una media.
+
+### A) Distribuzione dello score per categoria
+- istogrammi o boxplot per category
+- obiettivo: categorie “deboli” concentrate su score bassi, categorie “strong” su score alti
+
+### B) Coerenza pattern → penalità
+Per ogni categoria “pattern-based” verificare:
+- percentuale record in cui il pattern corretto appare in patterns
+- score medio/mediano più basso rispetto alle categorie “strong”
+- suggerimenti coerenti con pattern (qualità UX)
+
+### C) Confronto PSM vs baseline (zxcvbn)
+Definire:
+- delta = score_psm - score_baseline
+
+Analizzare:
+- delta medio per categoria
+- outlier (delta molto alto o molto basso) e motivazione
+
+### D) Casi “critici” (da discutere nella relazione)
+- password corte ma multi-categoria (rischio sovrastima)
+- sequenze mascherate (rischio sovrastima)
+- password lunghe con token personali (trade-off: lunghezza vs penalità personale)
+- small-set + anno (pattern prevedibile)
+
+## Cosa deve finire in questa cartella (deliverable “di docs”)
+Per chiudere la valutazione sperimentale, qui dentro dovreste includere:
+1) Metodologia (questo README, eventualmente esteso)
+2) Sintesi risultati (tabelle e/o grafici)
+3) Discussione:
+   - dove PSM concorda con baseline
+   - dove diverge e perché (scelte progettuali, pattern detection, policy)
+4) Minacce alla validità (oneste e concise):
+   - dataset sintetico (generalizzazione limitata)
+   - baseline non è “verità assoluta”
+   - dimensione dataset e scelta categorie
+   - dipendenza da seed/parametri (ma tracciati)
+
+Suggerimento struttura file in questa cartella:
+- results_summary.md (testo + tabelle principali)
+- figures/ (grafici esportati)
+- notes.md (note su outlier o casi interessanti)
+
+## Criterio di completamento (quando possiamo dire “valutazione sperimentale ok”)
+La valutazione è “chiusa” quando:
+- esiste almeno 1 dataset salvato/versionato con seed e parametri
+- esiste almeno 1 run completo in src/experiments/outputs/<runId>/
+- sono presenti:
+  - distribuzioni score per categoria
+  - confronto con baseline (anche su subset significativo)
+  - 5–10 esempi commentati di casi interessanti (pattern/outlier)
+- i risultati sono riproducibili rieseguendo i comandi con lo stesso seed
