@@ -2,6 +2,12 @@
 
 const express = require("express");
 const cors = require("cors");
+const fs = require("fs");
+const path = require("path");
+
+
+const EXPERIMENTS_DIR = path.join(__dirname, "../experiments/outputs");
+
 
 // Import diretto dell'engine dual-mode (single source of truth)
 const engine = require("../engine/psmEngine.js");
@@ -187,6 +193,101 @@ if (!vPw.ok) {
 });
 
 const PORT = process.env.PORT || 3000;
+
+app.get("/experiments", (req, res) => {
+  try {
+    if (!fs.existsSync(EXPERIMENTS_DIR)) {
+      return res.json({ runs: [] });
+    }
+
+    const runs = fs.readdirSync(EXPERIMENTS_DIR, { withFileTypes: true })
+      .filter(d => d.isDirectory())
+      .map(d => d.name);
+
+    return res.json({ runs });
+  } catch (e) {
+    return res.status(500).json({ error: "Errore lettura runs" });
+  }
+});
+
+
+app.get("/experiments/:runId", (req, res) => {
+  try {
+    const runId = req.params.runId;
+    const runDir = path.join(EXPERIMENTS_DIR, runId);
+
+    if (!fs.existsSync(runDir)) {
+      return res.status(404).json({ error: "Run non trovato" });
+    }
+
+    const metaPath = path.join(runDir, "meta.json");
+    const resultsPath = path.join(runDir, "results.json");
+
+    const meta = fs.existsSync(metaPath)
+      ? JSON.parse(fs.readFileSync(metaPath, "utf8"))
+      : null;
+
+    const limit = Math.max(1, Math.min(200, parseInt(req.query.limit || "20", 10)));
+
+    let resultsPreview = [];
+    if (fs.existsSync(resultsPath)) {
+      const all = JSON.parse(fs.readFileSync(resultsPath, "utf8"));
+      const arr = Array.isArray(all?.results) ? all.results : [];
+      resultsPreview = arr.slice(0, limit);
+    }
+
+    return res.json({ runId, meta, resultsPreview });
+  } catch (e) {
+    return res.status(500).json({ error: "Errore lettura run" });
+  }
+});
+
+app.get("/experiments/:runId/export", (req, res) => {
+  try {
+    const runId = req.params.runId;
+    const format = String(req.query.format || "").toLowerCase();
+
+    if (format !== "csv" && format !== "json" && format !== "tsv" && format !== "excelcsv") {
+  return res.status(400).json({
+    error: "Formato non supportato. Usa ?format=csv oppure ?format=json oppure ?format=tsv oppure ?format=excelcsv"
+  });
+}
+
+
+    const runDir = path.join(EXPERIMENTS_DIR, runId);
+    if (!fs.existsSync(runDir)) {
+      return res.status(404).json({ error: "Run non trovato" });
+    }
+
+    const fileName =
+    format === "csv" ? "results.csv" :
+    format === "tsv" ? "results.tsv" :
+    format === "excelcsv" ? "results_excel.csv" :
+    "results.json";
+
+    const filePath = path.join(runDir, fileName);
+
+    if (!fs.existsSync(filePath)) {
+      return res.status(404).json({ error: "File non trovato" });
+    }
+
+   res.setHeader("Content-Disposition", `attachment; filename="${runId}_${fileName}"`);
+   res.setHeader(
+    "Content-Type",
+    (format === "csv" || format === "excelcsv") ? "text/csv" :
+    format === "tsv" ? "text/tab-separated-values" :
+    "application/json"
+);
+
+
+
+    fs.createReadStream(filePath).pipe(res);
+  } catch (e) {
+    return res.status(500).json({ error: "Errore export" });
+  }
+});
+
+
 app.listen(PORT, () => {
   console.log(`PSM API listening on http://localhost:${PORT}`);
 });
