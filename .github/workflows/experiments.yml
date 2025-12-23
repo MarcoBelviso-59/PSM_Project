@@ -2,6 +2,10 @@ name: Experiments (PSM vs zxcvbn)
 
 on:
   workflow_dispatch:
+   inputs:
+      seed:
+        description: "Seed numerico (se vuoto usa github.run_id)"
+        required: false
   push:
     paths:
       - "src/experiments/**"
@@ -21,17 +25,21 @@ jobs:
         with:
           node-version: "20"
 
+       - name: Set dataset seed
+         run: echo "DATASET_SEED=${{ github.event.inputs.seed || github.run_id }}" >> $GITHUB_ENV
+
+
       - name: Install dependencies (experiments)
         working-directory: src/experiments
         run: npm ci
 
       - name: Generate dataset (v1)
         working-directory: src/experiments
-        run: node tools/generate_dataset.js datasets/dataset_v1.json 20
+        run: node tools/generate_dataset.js datasets/dataset_v1.json 20 --seed $DATASET_SEED
 
       - name: Run experiment (dataset_v1)
         working-directory: src/experiments
-        run: node run.js --in datasets/dataset_v1.json --out outputs/run_dataset_v1_ci --redact-password
+       run: node run.js --in datasets/dataset_v1.json --out outputs/run_dataset_v1_ci --redact-password --seed $DATASET_SEED
 
       - name: Upload results artifact
         uses: actions/upload-artifact@v4
