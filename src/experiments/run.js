@@ -8,6 +8,8 @@ const { baselineZxcvbn } = require("./baselines/zxcvbn");    // baseline pronta
 
 function parseArgs(argv) {
   const args = {};
+  const datasetSeed = args.seed ? Number(args.seed) : null;
+
   for (let i = 2; i < argv.length; i++) {
     const a = argv[i];
     if (!a.startsWith("--")) continue;
@@ -152,6 +154,7 @@ const topAbsDisagree = [...rows]
 
 const meta = {
   dataset: path.relative(__dirname, inPath),
+  datasetSeed,
   out: path.relative(__dirname, outPath),
   records: rows.length,
   aggregates: {
@@ -200,3 +203,4 @@ fs.writeFileSync(path.join(outPath, "results.tsv"), tsv, "utf8");
   console.log("OK - run completato");
   console.log("Output:", outPath);
 })();
+
