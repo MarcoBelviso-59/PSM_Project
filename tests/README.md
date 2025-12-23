@@ -1,43 +1,241 @@
-# Test Plan (PSM_Project) — Casi di test minimi, ripetibili e tracciabili
+# Test Plan (PSM_Project) — Casi minimi, ripetibili e tracciabili
 
-Questa cartella raccoglie il piano di test del progetto e una batteria minima di casi con risultato atteso, pensata per verificare in modo rapido e ripetibile che UI, engine e (quando presente) API producano comportamenti coerenti. L’obiettivo non è “fare test infiniti”, ma avere un set essenziale che copra i pattern critici (sequenze, ripetizioni, dizionari, info personali), i requisiti minimi di accettazione (validateFinal) e i casi limite che in passato hanno generato sovrastime. Questo documento è anche un supporto diretto per la relazione: mostra quali verifiche sono state eseguite e quali proprietà del sistema vengono garantite.
+Questa cartella raccoglie un **piano di test minimo** (ma utile) per verificare in modo rapido e ripetibile che **UI**, **Engine** e **API** producano comportamenti coerenti.
 
-Il progetto prevede due livelli di verifica: (1) la valutazione real-time (punteggio/livello/pattern/suggerimenti) prodotta dall’engine, consumata dalla UI e dall’API; (2) la validazione finale “accettabile/non accettabile” prodotta da `validateFinal`. Per questo motivo, ogni caso di test deve indicare almeno: l’input (password e, se rilevante, contesto personale), l’aspettativa qualitativa (ad esempio “score deve risultare basso” oppure “non deve superare un cap” oppure “validateFinal deve fallire”), e il motivo (quale pattern o requisito è coinvolto). Non imponiamo numeri esatti di score per tutti i casi, perché la taratura può cambiare; imponiamo invece vincoli stabili e difendibili (soglie minime, cap, presenza pattern, esito validateFinal). Se si decide una taratura definitiva, è possibile aggiungere colonne con score atteso, ma la priorità è evitare ambiguità e rework.
+Obiettivo: non “fare test infiniti”, ma avere un set essenziale che copra:
+- pattern critici (sequenze, ripetizioni, dizionari/small-set, info personali)
+- requisiti minimi di accettazione (`validateFinal`)
+- casi limite che in passato hanno generato **sovrastime**
+- coerenza tra canali (stesso input → stesso output qualitativo)
 
-Modalità di esecuzione dei test: i casi possono essere eseguiti manualmente sulla demo in `src/web/` (inserendo i dati richiesti e osservando barra, livello e suggerimenti), oppure in modo più diretto invocando l’engine (quando sarà estratto in `src/engine/`) o l’API (quando sarà implementata in `src/api/`). In ogni caso, la proprietà da garantire è la stessa: stesso input → stesso output (determinismo) e coerenza tra i canali (UI, API, esperimenti). Per i casi con contesto, è importante impostare nome/cognome/email prima di digitare la password, così `personalTokens` è costruito e le penalità personali sono attive.
+Aggiornato al **23/12/2025**.
 
-Requisiti minimi che questi test devono coprire: (a) password troppo corta o con poche categorie non deve essere accettata (validateFinal negativo) e non deve mai risultare “Molto forte”; (b) password con sequenze (alfabetiche, numeriche o da tastiera) deve essere penalizzata e non deve raggiungere punteggi alti; (c) password basata su parole comuni/dizionario o su insiemi “small-set” (mesi, giorni, colori, città, nomi, animali, squadre) deve essere penalizzata e soggetta a cap; (d) password che contiene token personali (nome, cognome, parti email) deve essere penalizzata in modo visibile; (e) password lunga e realmente varia (con più categorie e senza pattern) deve poter raggiungere punteggi alti ed essere accettata; (f) suggerimenti e livello non devono contraddirsi (es. “Molto forte” ma “troppo corta”).
+---
 
-Di seguito la batteria minima consigliata (almeno 20 casi). Per ogni caso, “Aspettativa” indica vincoli qualitativi e di accettazione; “Note” spiega cosa si sta verificando. Dove è indicato un cap o un vincolo di soglia, va rispettato in modo stabile dalla logica del progetto (se cambiate taratura, aggiornate questa lista). Se nel vostro progetto avete già deciso cap specifici (ad esempio per lunghezze <12 o per pop culture), riportateli in modo coerente: i casi qui sotto sono scritti per essere compatibili con l’approccio a cap discusso nel progetto.
+## Componenti sotto test (single source of truth)
+- **Engine**: `src/engine/psmEngine.js`
+  - `evaluate(password, personalTokens)` → score/level/patterns
+  - `generateFeedback(evaluation)` → suggerimenti
+  - `validateFinal(password, personalTokens)` → { ok, msg }
+- **Web UI (DS1)**: `src/web/` (consuma l’engine in-browser)
+- **API (DS2)**: `src/api/` (consuma lo stesso engine)
+- **Esperimenti (DS3–DS5)**: `src/experiments/` (runner + baseline + output)
 
-Casi senza contesto (nessun nome/cognome/email impostato):
-1) Password: `aaaaaaaa` — Aspettativa: score basso, livello basso, validateFinal probabilmente NO; Note: ripetizione estrema (unicità minima), pattern ovvio.
-2) Password: `abcdfeff12` — Aspettativa: score basso o comunque non alto, deve essere penalizzata per sequenza; validateFinal può variare ma non deve risultare “forte”; Note: sequenza alfabetica/consecutività (caso noto di sovrastima da evitare).
-3) Password: `12345678` — Aspettativa: score molto basso, validateFinal NO; Note: numerica e sequenza comune.
-4) Password: `qwerty12!` — Aspettativa: penalità sequenza tastiera, score non alto, validateFinal può variare ma non deve essere alta; Note: pattern tastiera.
-5) Password: `Password!1` — Aspettativa: penalità dizionario/parola comune, score medio-basso, non deve raggiungere “Molto forte”; Note: parola nota + semplice variazione.
-6) Password: `novembre2025!` — Aspettativa: penalità “small-set” (mese) + pattern prevedibile, score non alto; Note: mese + numero.
-7) Password: `RomaRomaRoma1!` — Aspettativa: penalità ripetizione e parola “small-set” (città), score non alto; Note: ripetizioni strutturate.
-8) Password: `Milan1908!!` — Aspettativa: penalità “small-set” (squadra) e prevedibilità, score non alto; Note: riferimenti sportivi.
-9) Password: `Goku2025!!` — Aspettativa: penalità pop culture (se prevista) e/o cap, score non deve risultare massimo; Note: caso rappresentativo di parole riconoscibili.
-10) Password: `A1!a` — Aspettativa: score molto basso, validateFinal NO per lunghezza; Note: troppo corta, anche se ha categorie.
-11) Password: `Aa1!Aa1!` — Aspettativa: penalità ripetizione pattern, score non alto, validateFinal potrebbe essere SI ma non deve essere “Molto forte”; Note: ripetizione di blocchi.
-12) Password: `Z7$kQ2!m` — Aspettativa: score discreto, validateFinal SI; Note: corta ma varia (controllo che non venga sovrastimata a “top”).
-13) Password: `Z7$kQ2!mP9@rT4#x` — Aspettativa: score alto, validateFinal SI; Note: buona entropia apparente, lunghezza e varietà.
-14) Password: `Z7$kQ2!mP9@rT4#xL8&nS5*` — Aspettativa: score molto alto, livello massimo, validateFinal SI; Note: lunga e varia senza pattern evidenti.
-15) Password: `1111aaaa!!!!` — Aspettativa: penalità ripetizione multi-gruppo, score non alto, validateFinal può variare ma non deve risultare “Molto forte”; Note: composizione prevedibile.
+---
 
-Casi con contesto (impostare prima nome/cognome/email):
-Impostare contesto esempio: nome = Mario, cognome = Rossi, email = mario.rossi@example.com.
-16) Password: `Mario2025!` — Aspettativa: penalità info personali, score non alto, suggerimenti devono menzionare info personali; validateFinal può variare ma non deve risultare alta; Note: token personale esplicito.
-17) Password: `rossi!123A` — Aspettativa: penalità info personali + sequenza numerica, score non alto; Note: cognome + numeri.
-18) Password: `example!A1mario` — Aspettativa: penalità per parti email, score non alto; Note: token da dominio/local-part.
-19) Password: `SuperLungaMarioRossi2025!!!Qx9#` — Aspettativa: anche se lunga, deve ricevere penalità info personali e non ottenere valutazione “perfetta”; Note: verifica che la lunghezza non annulli penalità personali (ma nemmeno la renda “inutile”: deve restare “buona” ma non “massima”).
-20) Password: `Z7$kQ2!mP9@rT4#x` con contesto impostato — Aspettativa: non deve cambiare rispetto al caso 13 (nessun match con token); Note: contesto non deve penalizzare se non c’è match reale.
+## Regole del test plan (stabilità)
+Non imponiamo numeri esatti di score per ogni caso (la taratura può cambiare).
+Imponiamo invece vincoli **stabili e difendibili**, ad esempio:
+- “score deve risultare basso / non alto”
+- “non deve essere ‘Molto forte’”
+- “deve essere penalizzata per sequenza/ripetizione/small-set/token personale”
+- “`validateFinal` deve fallire / deve passare”
+- “suggerimenti e livello non devono contraddirsi”
 
-Casi di coerenza UI/engine/suggerimenti:
-21) Password: qualsiasi che risulti breve (es. 9–10 caratteri) ma con molte categorie — Aspettativa: livello e suggerimenti non devono contraddirsi (non “Molto forte” con “troppo corta”); Note: coerenza messaggi.
-22) Password: una password dichiarata “Molto forte” — Aspettativa: suggerimenti devono essere vuoti o marginali, non devono proporre fix drastici; Note: qualità feedback.
+Se cambiate taratura/policy in `psmEngine.js`, aggiornate questo documento indicando esplicitamente:
+- quali casi cambiano aspettativa
+- perché (nuova regola / nuovo dizionario / nuovo cap)
 
-Criteri di chiusura del test plan: (1) tutti i casi sopra possono essere eseguiti in modo ripetibile; (2) per ciascun caso è possibile osservare chiaramente se l’aspettativa è soddisfatta; (3) quando l’engine viene estratto o quando si implementa l’API, lo stesso set produce gli stessi esiti qualitativi (coerenza cross-canale). In caso di modifiche alle regole (penalità, dizionari, cap), questo documento va aggiornato in modo esplicito indicando quali aspettative cambiano e perché.
+---
 
+## Come eseguire i test
+
+### A) Manuale via Web UI (DS1)
+Avvio corretto (serve `src/` come root):
+~~~bash
+cd src
+python -m http.server 8080
+~~~
+Apri: `http://localhost:8080/web/`
+
+Procedura consigliata:
+1) Compila nome/cognome/email (per i casi “con contesto”).
+2) Inserisci la password: verifica barra/score, livello e suggerimenti (real-time).
+3) Esegui submit (creazione): verifica esito `validateFinal` (accettata/rifiutata e messaggio).
+
+---
+
+### B) Diretto via Engine (Node)
+Questo è il modo più veloce per capire se un cambio all’engine ha rotto qualcosa.
+
+Esempio (una password):
+~~~bash
+node -e '
+const e = require("./src/engine/psmEngine.js");
+const tokens = ["mario","rossi","example","mario.rossi"];
+const ev = e.evaluate("Mario2025!", tokens);
+console.log(ev);
+console.log("feedback:", e.generateFeedback(ev));
+console.log("final:", e.validateFinal("Mario2025!", tokens));
+'
+~~~
+
+Suggerimento:
+- usate sempre gli stessi token per i casi “con contesto” (es. Mario/Rossi/mario.rossi@example.com) per ripetibilità.
+
+---
+
+### C) Via API (DS2)
+Avvio:
+~~~bash
+cd src/api
+npm install
+npm start
+~~~
+API: `http://localhost:3000`
+
+Valuta:
+~~~bash
+curl -sSf http://localhost:3000/api/evaluate \
+  -H "Content-Type: application/json" \
+  -d '{"password":"ExamplePassword!2026","options":{"includeFeedback":true}}'
+~~~
+
+Valida final:
+~~~bash
+curl -sSf http://localhost:3000/api/validate \
+  -H "Content-Type: application/json" \
+  -d '{"password":"ExamplePassword!2026"}'
+~~~
+
+Se `PSM_API_KEY` è impostata, aggiungere:
+~~~bash
+-H "x-api-key: <value>"
+~~~
+
+---
+
+## Requisiti minimi coperti da questi test
+(a) Password troppo corta o con poche categorie:
+- `validateFinal` deve essere NO
+- non deve mai risultare “Molto forte”
+
+(b) Password con sequenze (alfabetiche, numeriche, tastiera):
+- deve essere penalizzata
+- non deve raggiungere punteggi alti
+
+(c) Password basata su parole comuni/dizionario o “small-set” (mesi, giorni, colori, città, nomi, animali, squadre):
+- deve essere penalizzata e/o soggetta a cap
+
+(d) Password che contiene token personali (nome/cognome/parti email):
+- deve essere penalizzata in modo visibile
+- i suggerimenti devono evidenziare l’uso di info personali
+
+(e) Password lunga e realmente varia (multi-categoria, senza pattern):
+- deve poter raggiungere punteggi alti
+- deve essere accettata da `validateFinal`
+
+(f) Coerenza messaggi:
+- livello e suggerimenti non devono contraddirsi (es. “Molto forte” ma “troppo corta”)
+
+---
+
+## Batteria minima consigliata (22 casi)
+
+### Casi SENZA contesto (nessun nome/cognome/email impostato)
+1) `aaaaaaaa`  
+   Aspettativa: score basso, livello basso; `validateFinal` NO (o comunque non “OK”).  
+   Note: ripetizione estrema / unicità minima.
+
+2) `abcdfeff12`  
+   Aspettativa: penalità sequenza/consecutività; score non alto; non deve risultare “forte”.  
+   Note: caso noto di sovrastima da evitare.
+
+3) `12345678`  
+   Aspettativa: score molto basso; `validateFinal` NO.  
+   Note: sequenza numerica comune.
+
+4) `qwerty12!`  
+   Aspettativa: penalità tastiera; score non alto; non “Molto forte”.  
+   Note: pattern tastiera.
+
+5) `Password!1`  
+   Aspettativa: penalità parola comune/dizionario; score medio-basso; non “Molto forte”.  
+   Note: parola nota + variazione banale.
+
+6) `novembre2025!`  
+   Aspettativa: penalità small-set (mese) + prevedibilità; score non alto.  
+   Note: mese + numero.
+
+7) `RomaRomaRoma1!`  
+   Aspettativa: penalità ripetizione + small-set (città); score non alto.  
+   Note: ripetizioni strutturate.
+
+8) `Milan1908!!`  
+   Aspettativa: penalità small-set (squadra) e prevedibilità; score non alto.  
+   Note: riferimenti sportivi.
+
+9) `Goku2025!!`  
+   Aspettativa: penalità (pop culture se prevista) e/o cap; non deve risultare “perfetta”.  
+   Note: parola riconoscibile + anno.
+
+10) `A1!a`  
+   Aspettativa: score molto basso; `validateFinal` NO per lunghezza.  
+   Note: troppo corta anche se multi-categoria.
+
+11) `Aa1!Aa1!`  
+   Aspettativa: penalità ripetizione di blocchi; score non alto; non “Molto forte”.  
+   Note: pattern ripetuto.
+
+12) `Z7$kQ2!m`  
+   Aspettativa: score discreto (non top); `validateFinal` può essere SI o NO in base a policy, ma non deve essere “massimo”.  
+   Note: corta ma varia (controllo anti-sovrastima).
+
+13) `Z7$kQ2!mP9@rT4#x`  
+   Aspettativa: score alto; `validateFinal` SI.  
+   Note: lunghezza e varietà, pattern non evidenti.
+
+14) `Z7$kQ2!mP9@rT4#xL8&nS5*`  
+   Aspettativa: score molto alto; livello massimo; `validateFinal` SI.  
+   Note: lunga e varia.
+
+15) `1111aaaa!!!!`  
+   Aspettativa: penalità ripetizione multi-gruppo; score non alto; non “Molto forte”.  
+   Note: struttura prevedibile.
+
+---
+
+### Casi CON contesto (impostare prima: nome Mario, cognome Rossi, email mario.rossi@example.com)
+Token suggeriti (qualitativi): `["mario","rossi","mario.rossi","example","com"]`
+
+16) `Mario2025!`  
+   Aspettativa: penalità info personali; score non alto; suggerimenti devono menzionare info personali; non “Molto forte”.  
+   Note: token personale esplicito.
+
+17) `rossi!123A`  
+   Aspettativa: penalità info personali + sequenza numerica; score non alto.  
+   Note: cognome + numeri.
+
+18) `example!A1mario`  
+   Aspettativa: penalità per parti email + token personale; score non alto.  
+   Note: token da email (dominio/local-part).
+
+19) `SuperLungaMarioRossi2025!!!Qx9#`  
+   Aspettativa: anche se lunga deve ricevere penalità info personali; non deve essere “perfetta”.  
+   Note: la lunghezza non deve annullare completamente la penalità personale (ma non deve nemmeno “distruggerla”: può restare buona ma non massima).
+
+20) `Z7$kQ2!mP9@rT4#x` (stessa del caso 13, con contesto)  
+   Aspettativa: non deve cambiare in modo significativo (nessun match con token); `validateFinal` come caso 13.  
+   Note: il contesto non deve penalizzare se non c’è match reale.
+
+---
+
+### Coerenza livello/suggerimenti (qualità UX)
+21) Una password breve (9–10 char) ma multi-categoria (es. lettere maiuscole/minuscole + numeri + simboli)  
+   Aspettativa: se viene segnalata “troppo corta”, il livello non deve essere “Molto forte”.
+
+22) Una password dichiarata “Molto forte” (es. caso 14)  
+   Aspettativa: suggerimenti devono essere vuoti o marginali (non “fix drastici”).
+
+---
+
+## Criteri di chiusura (pass/fail)
+Il test plan è “OK” quando:
+1) tutti i casi sopra sono eseguibili in modo ripetibile (UI/Engine/API)
+2) per ogni caso è chiaro se l’aspettativa è rispettata
+3) UI e API restano coerenti con l’engine (stesso input → stesso output qualitativo)
+4) eventuali cambi di policy sono documentati con motivazione + aggiornamento di questo file
+
+Se un caso fallisce:
+- aprire issue con: password, contesto, output (score/level/pattern/suggestions + validateFinal), e expected.
+- se il fallimento è “atteso” (policy cambiata), aggiornare qui l’aspettativa con motivazione.
