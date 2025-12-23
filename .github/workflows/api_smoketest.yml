@@ -1,0 +1,73 @@
+name: API Smoketest (experiments endpoints)
+
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - "src/api/**"
+      - "src/experiments/**"
+      - "src/engine/**"
+      - ".github/workflows/api_smoketest.yml"
+
+jobs:
+  smoketest:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      # 1) Prepara un run in outputs/ (così l'API lo trova)
+      - name: Install dependencies (experiments)
+        working-directory: src/experiments
+        run: npm install
+
+      - name: Generate dataset (v1)
+        working-directory: src/experiments
+        run: node tools/generate_dataset.js datasets/dataset_v1.json 5
+
+      - name: Run experiment (smoke)
+        working-directory: src/experiments
+        run: node run.js --in datasets/dataset_v1.json --out outputs/run_smoke_ci --redact-password
+
+      # 2) Avvia API
+      - name: Install dependencies (api)
+        working-directory: src/api
+        run: npm install
+
+      - name: Start API (background)
+        working-directory: src/api
+        run: |
+          nohup node server.js > api.log 2>&1 &
+          echo $! > api.pid
+          sleep 2
+
+      # 3) Smoketest chiamate HTTP
+      - name: Test /experiments (list)
+        run: curl -sSf http://localhost:3000/experiments
+
+      - name: Test /experiments/:runId (detail)
+        run: curl -sSf "http://localhost:3000/experiments/run_smoke_ci?limit=2"
+
+      - name: Test export TSV
+        run: |
+          curl -sSf "http://localhost:3000/experiments/run_smoke_ci/export?format=tsv" -o out.tsv
+          test -s out.tsv
+
+      - name: Test export excelcsv
+        run: |
+          curl -sSf "http://localhost:3000/experiments/run_smoke_ci/export?format=excelcsv" -o out.csv
+          test -s out.csv
+
+      # 4) (opzionale) stop server per pulizia
+      - name: Stop API
+        if: always()
+        working-directory: src/api
+        run: |
+          if [ -f api.pid ]; then kill $(cat api.pid) || true; fi
+          tail -n 200 api.log || true
