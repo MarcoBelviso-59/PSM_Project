@@ -8,7 +8,7 @@ const { baselineZxcvbn } = require("./baselines/zxcvbn");    // baseline pronta
 
 function parseArgs(argv) {
   const args = {};
-  const datasetSeed = args.seed ? Number(args.seed) : null;
+  
 
   for (let i = 2; i < argv.length; i++) {
     const a = argv[i];
@@ -95,6 +95,7 @@ function groupByCategory(rows) {
   const inFile = args.in || "datasets/sample.json";
   const outDir = args.out || "outputs/sample_run";
   const redact = Boolean(args["redact-password"]);
+  const datasetSeed = args.seed ? Number(args.seed) : null;
 
   const inPath = path.resolve(__dirname, inFile);
   const outPath = path.resolve(__dirname, outDir);
@@ -140,7 +141,7 @@ function groupByCategory(rows) {
 
  const byCategory = groupByCategory(rows);
 
-const topAbsDisagree = [...rows]
+const topAbsDisagree = rows
   .sort((a, b) => Math.abs(b.delta) - Math.abs(a.delta))
   .slice(0, 10)
   .map(r => ({
@@ -194,7 +195,7 @@ const tsvColumns = [
 
 const tsv = [
   tsvColumns.join("\t"),
-  ...rows.map(r => tsvColumns.map(c => String(r[c] ?? "")).join("\t"))
+  rows.map(r => tsvColumns.map(c => String(r[c] ?? "")).join("\t"))
 ].join("\n");
 
 fs.writeFileSync(path.join(outPath, "results.tsv"), tsv, "utf8");
@@ -203,4 +204,5 @@ fs.writeFileSync(path.join(outPath, "results.tsv"), tsv, "utf8");
   console.log("OK - run completato");
   console.log("Output:", outPath);
 })();
+
 
