@@ -35,11 +35,11 @@ jobs:
 
       - name: Generate dataset (v1)
         working-directory: src/experiments
-        run: node tools/generate_dataset.js datasets/dataset_v1.json 20 --seed $DATASET_SEED
+        run: node tools/generate_dataset.js datasets/dataset_v1.json 20 --seed $DATASET_SEED --seed 12345
 
       - name: Run experiment (dataset_v1)
         working-directory: src/experiments
-       run: node run.js --in datasets/dataset_v1.json --out outputs/run_dataset_v1_ci --redact-password --seed $DATASET_SEED
+       run: node run.js --in datasets/dataset_v1.json --out outputs/run_dataset_v1_ci --redact-password --seed 12345
 
       - name: Upload results artifact
         uses: actions/upload-artifact@v4
