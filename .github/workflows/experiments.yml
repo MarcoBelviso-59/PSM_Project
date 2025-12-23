@@ -1,0 +1,42 @@
+name: Experiments (PSM vs zxcvbn)
+
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - "src/experiments/**"
+      - "src/engine/**"
+      - ".github/workflows/experiments.yml"
+
+jobs:
+  run-experiments:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Install dependencies (experiments)
+        working-directory: src/experiments
+        run: npm ci
+
+      - name: Generate dataset (v1)
+        working-directory: src/experiments
+        run: node tools/generate_dataset.js datasets/dataset_v1.json 20
+
+      - name: Run experiment (dataset_v1)
+        working-directory: src/experiments
+        run: node run.js --in datasets/dataset_v1.json --out outputs/run_dataset_v1_ci --redact-password
+
+      - name: Upload results artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: run_dataset_v1_ci
+          path: |
+            src/experiments/outputs/run_dataset_v1_ci/**
+            src/experiments/datasets/dataset_v1.json
