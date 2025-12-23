@@ -1,36 +1,151 @@
-# Engine (PSM_Project) — Modulo di valutazione password
+# PSM_Project — Engine (shared core)
 
-Questa cartella contiene l’engine di valutazione password, estratto dal prototipo web. La UI non implementa regole: raccoglie input, costruisce `personalTokens`, invoca l’engine e mostra output. L’engine è la **single source of truth** per score, livello, pattern e suggerimenti; di conseguenza è anche la base per API (DS2) ed esperimenti (DS3–DS5). :contentReference[oaicite:1]{index=1}
+Questo modulo contiene **tutta la logica** di valutazione password del progetto:
+- calcolo **score 0–100**
+- determinazione del **livello** (stringa)
+- rilevamento **pattern** (sequenze, ripetizioni, token personali, ecc.)
+- generazione suggerimenti (**feedback**)
+- **validazione finale** (policy di accettazione al submit)
 
-## File principale
-- `src/engine/psmEngine.js`
+È progettato come **single source of truth**: lo usano sia la **Web UI (browser)** sia l’**API** e gli **esperimenti (Node)**.
 
-Il file espone un oggetto globale `window.PSMEngine` per consentire l’uso diretto in browser (demo). L’engine è deterministico: stesso input → stesso output. L’engine non dipende dal DOM (niente `document`, niente event listener). :contentReference[oaicite:2]{index=2}
+Aggiornato al **23/12/2025**.
 
-## Responsabilità
-- Calcolare un punteggio `score` (0–100) e un livello testuale `level`.
-- Rilevare pattern deboli (sequenze/ripetizioni/dizionario/small-set/pop culture/anni-date/info personali quando disponibili).
-- Produrre suggerimenti coerenti tramite `generateFeedback`.
-- Applicare una validazione finale tramite `validateFinal` (requisiti minimi + policy finali). :contentReference[oaicite:3]{index=3}
+---
 
-## Input personale (`personalTokens`)
-`personalTokens` è un array di stringhe normalizzate derivato da nome, cognome ed email (token da local-part e dominio). È opzionale: se assente o vuoto, l’engine valuta comunque la password senza penalità personali. :contentReference[oaicite:4]{index=4}
+## File principali
+- `psmEngine.js` — implementazione engine (dual-mode: Browser + Node)
 
-Nota: `validateFinal` rifiuta password che includono info personali quando i token sono forniti (incluso matching con sostituzioni leet basilari, es. 0→o, 1→i). (La UI/API devono quindi passare `personalTokens` quando disponibili.)
+---
 
-## Interfaccia pubblica (stabile fino a consegna)
-- `evaluate(password, personalTokens)` → `{ score, level, patterns }`
-- `generateFeedback(evaluation)` → `string[]` (suggerimenti)
-- `validateFinal(password, personalTokens)` → `{ ok, msg }` (accettazione finale)
+## API pubblica (stable)
 
-`level` usa la scala italiana: **Molto debole, Debole, Discreta, Buona, Molto forte**. :contentReference[oaicite:5]{index=5}
+### `evaluate(password, personalTokens = [])`
+Valuta una password e ritorna un oggetto con score, livello e pattern rilevati.
 
-## Integrazione con la UI
-La UI deve caricare prima `../engine/psmEngine.js` e poi `app.js`. La UI invoca `evaluate`/`generateFeedback` durante la digitazione e invoca `validateFinal` in fase di conferma. La UI non deve duplicare soglie o policy già presenti in `validateFinal`. :contentReference[oaicite:6]{index=6}
+**Firma:**
+~~~js
+evaluate(password, personalTokens = [])
+~~~
 
-## Verifica rapida (regressione)
-Testare almeno questi casi:
-1) sequenza prevedibile (es. `12345678Aa!`)
-2) parola comune con variazioni (es. `P@ssw0rd!`)
-3) password con token personale (es. `Mario2025!` con `personalTokens=["mario"]` → `validateFinal.ok=false`)
-4) password lunga e varia (es. `xR7!pL9$kQ2@zN5#` → score alto e `validateFinal.ok=true`)
+**Ritorno:**
+~~~js
+{
+  score: number,          // 0..100
+  level: string,          // es. "Molto debole" | "Debole" | "Discreta" | "Buona" | "Molto forte"
+  patterns: Array<object> // lista pattern rilevati (con type + dettagli)
+}
+~~~
+
+**Esempio (Node):**
+~~~js
+const engine = require("./psmEngine.js");
+const evaluation = engine.evaluate("ExamplePassword!2026", ["mario", "rossi"]);
+console.log(evaluation.score, evaluation.level, evaluation.patterns);
+~~~
+
+---
+
+### `generateFeedback(evaluation)`
+Genera suggerimenti (array di stringhe) a partire dall’output di `evaluate`.
+
+**Firma:**
+~~~js
+generateFeedback(evaluation)
+~~~
+
+**Ritorno:**
+~~~js
+["Suggerimento 1", "Suggerimento 2", "..."]
+~~~
+
+**Esempio:**
+~~~js
+const engine = require("./psmEngine.js");
+const evaluation = engine.evaluate("password123", []);
+const suggestions = engine.generateFeedback(evaluation);
+console.log(suggestions);
+~~~
+
+---
+
+### `validateFinal(password, personalTokens = [])`
+Applica la **policy di accettazione finale** (pensata per il “submit”, es. creazione account).
+Ritorna `ok` + messaggio.
+
+**Firma:**
+~~~js
+validateFinal(password, personalTokens = [])
+~~~
+
+**Ritorno:**
+~~~js
+{ ok: boolean, msg: string }
+~~~
+
+**Esempio:**
+~~~js
+const engine = require("./psmEngine.js");
+const res = engine.validateFinal("ExamplePassword!2026", ["mario"]);
+if (!res.ok) console.log("Rifiutata:", res.msg);
+~~~
+
+> Nota: `validateFinal` NON è pensata per aggiornarsi ad ogni tasto premuto: quello è il ruolo di `evaluate` + `generateFeedback`.
+
+---
+
+## Token personali (`personalTokens`)
+Molte penalità/pattern hanno senso solo se l’engine conosce token “personali” (nome, cognome, email parts, ecc.).
+
+- In UI: i token possono essere derivati dai campi inseriti dall’utente.
+- In API: i token possono essere derivati dal campo `user` della request.
+
+Il formato atteso è un array di stringhe:
+~~~js
+["mario", "rossi", "mario.rossi", "example", "2026"]
+~~~
+
+---
+
+## Uso in Browser (DS1)
+La UI carica l’engine come script e lo trova su `window.PSMEngine`.
+
+Esempio (in `src/web/index.html`):
+~~~html
+<script src="../engine/psmEngine.js"></script>
+<script src="../web/app.js"></script>
+~~~
+
+Esempio (in `src/web/app.js`):
+~~~js
+const { evaluate, generateFeedback, validateFinal } = window.PSMEngine;
+
+const evaluation = evaluate("ExamplePassword!2026", ["mario", "rossi"]);
+const suggestions = generateFeedback(evaluation);
+const finalCheck = validateFinal("ExamplePassword!2026", ["mario", "rossi"]);
+~~~
+
+---
+
+## Uso in Node (API / Experiments)
+In Node l’engine viene importato con `require(...)`.
+
+Esempio (API):
+~~~js
+const engine = require("../engine/psmEngine.js");
+app.post("/api/evaluate", (req, res) => {
+  const { password } = req.body;
+  const evaluation = engine.evaluate(password, []);
+  res.json(evaluation);
+});
+~~~
+
+---
+
+## Regole di progetto (coerenza)
+- **Non duplicare soglie/policy** in UI/API/experiments.
+- Ogni modifica a scoring/pattern/policy va fatta **solo** in `psmEngine.js`.
+- Dopo modifiche all’engine:
+  1) eseguire una suite di test (unit/integration)
+  2) rieseguire un run esperimenti (DS3) per confrontare trend e regressioni
+  3) verificare che UI e API diano output coerenti per le stesse password
