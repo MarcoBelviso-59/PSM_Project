@@ -1,0 +1,15 @@
+{
+  "name": "psm-experiments",
+  "version": "0.1.0",
+  "private": true,
+  "type": "commonjs",
+  "engines": {
+    "node": ">=18"
+  },
+  "scripts": {
+    "run:sample": "node run.js --in datasets/sample.json --out outputs/sample_run --redact password"
+  },
+  "dependencies": {
+    "zxcvbn": "^4.4.2"
+  }
+}
