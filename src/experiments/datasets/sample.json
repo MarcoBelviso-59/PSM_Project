@@ -1,0 +1,7 @@
+[
+  { "id": "1", "category": "random_strong", "password": "V9#kL2p@Qw7!zR3", "personalTokens": [] },
+  { "id": "2", "category": "short_weak",    "password": "ciao12",         "personalTokens": [] },
+  { "id": "3", "category": "pop_culture",   "password": "Goku2025",       "personalTokens": [] },
+  { "id": "4", "category": "personal_info", "password": "mario1999Roma",  "personalTokens": ["mario","roma","1999"] },
+  { "id": "5", "category": "patterns",      "password": "abcd1234",       "personalTokens": [] }
+]
