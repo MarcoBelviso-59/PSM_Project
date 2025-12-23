@@ -1,14 +1,85 @@
-# Web UI (DS1) — PSM_Project
+# PSM_Project — Web UI (DS1)
 
-Questa cartella (`PSM_project/src/web`) contiene la demo Web del Password Strength Meter e implementa lo scenario DS1: l’utente inserisce nome/cognome/email, passa allo step password e riceve una valutazione in tempo reale (score, livello, suggerimenti) con validazione finale prima di poter confermare la creazione. La UI non contiene logiche “di scoring” proprie: usa l’engine condiviso come single source of truth. Per questo motivo, qualunque modifica alle policy (punteggio, pattern, soglie, `validateFinal`) deve avvenire nell’engine e si riflette automaticamente anche qui.
+UI statica che simula una registrazione a due step:
+1) inserimento dati utente (nome, cognome, email)
+2) scelta password con valutazione **in tempo reale**, conferma password e **validazione finale** (policy)
 
-Struttura dei file in questa cartella: `index.html` (markup e inclusione script), `styles.css` (stili), `app.js` (logica UI e integrazione con engine). Dipendenza fondamentale: la pagina carica l’engine da `../engine/psmEngine.js` e poi carica `app.js`; l’ordine è obbligatorio perché `app.js` usa `window.PSMEngine` per calcolare score/pattern e per la validazione finale. Se l’engine non è caricato correttamente (percorso errato o ordine invertito), la UI non può funzionare.
+La UI usa **direttamente l’engine in-browser** (non richiede API per funzionare).
+Aggiornato al **23/12/2025**.
 
-Esecuzione: usare un server statico (consigliato “Live Server” in VS Code) aprendo `index.html` tramite `http://` e non tramite `file://`, così l’esecuzione è riproducibile e priva di comportamenti anomali del browser. Procedura consigliata: aprire la repository in VS Code, andare in `PSM_project/src/web`, clic destro su `index.html` → “Open with Live Server” (o equivalente), poi compilare lo step credenziali (nome, cognome, email) e cliccare “Continua” per passare allo step password. La UI costruisce i token personali a partire da nome/cognome/email e li usa per penalizzare/rifiutare password che contengono informazioni personali; per test realistici è importante inserire credenziali plausibili (ad esempio Mario Rossi e una email contenente nome/cognome).
+---
 
-Flusso DS1 (comportamento atteso): nello step password la valutazione si aggiorna ad ogni digitazione e mostra score/livello; i suggerimenti sono derivati dall’engine; la conferma password deve coincidere con la password principale; il bottone di conferma (“Crea account” o equivalente) rimane disabilitato finché la validazione finale dell’engine (`validateFinal`) non restituisce `ok=true` e finché la conferma non coincide. In altre parole, l’accettazione finale non dipende dalla UI ma dall’engine, e la UI si limita a mostrare feedback e abilitare/disabilitare l’azione finale in modo coerente.
+## Struttura
+- `index.html` — markup UI
+- `styles.css` — stile
+- `app.js` — logica UI (chiama `window.PSMEngine`)
 
-Test rapidi di regressione (consigliati dopo ogni modifica alle policy dell’engine): (1) inserire credenziali come `Nome=Mario`, `Cognome=Rossi`, `Email=mario.rossi@example.com`, andare allo step password e provare `Roma2025!`: ci si aspetta che venga rilevato come pattern prevedibile (anno/data) e che lo score venga contenuto, con suggerimento relativo ad anni/date; (2) provare `Mr0ss12024!` con le credenziali sopra: ci si aspetta rifiuto finale (`validateFinal.ok=false`) perché contiene info personali obfuscate (sostituzioni leet basilari); (3) provare una password robusta e lunga come `xR7!pL9$kQ2@zN5#`: ci si aspetta score alto e accettazione finale `ok=true`; (4) provare una password vuota o solo spazi: deve risultare non valida e il bottone finale deve restare disabilitato; (5) provare un caso comune/decorato come `P@ssw0rd!`: deve risultare penalizzato e non “molto forte”. Se uno di questi casi non si comporta come previsto, significa che UI/engine non sono allineati oppure l’engine non è quello aggiornato.
+Dipendenza principale:
+- `../engine/psmEngine.js` — engine condiviso
 
-Nota di coerenza con DS2: questa UI demo usa direttamente l’engine in locale (browser) e non richiede l’API per funzionare; l’API serve per lo scenario DS2 (valutazione via HTTP) e può essere usata separatamente per test automatici o integrazioni. Per mantenere coerenza di progetto, evitare duplicazioni di logica tra UI e API: entrambe devono delegare le policy all’engine condiviso.
+---
 
+## Avvio corretto (importante)
+`index.html` include l’engine così:
+
+~~~html
+<script src="../engine/psmEngine.js"></script>
+~~~
+
+Quindi devi servire **la cartella `src/` come root**, non `src/web/`.
+Se apri `src/web/index.html` direttamente da file (file://) o servi solo `src/web/`, il path relativo all’engine può rompersi.
+
+---
+
+## Run (demo DS1)
+
+### Opzione A (Python)
+~~~bash
+cd src
+python -m http.server 8080
+~~~
+Apri: `http://localhost:8080/web/`
+
+### Opzione B (Node)
+~~~bash
+cd src
+npx http-server -p 8080
+~~~
+Apri: `http://localhost:8080/web/`
+
+---
+
+## Comportamento UI (DS1)
+- **Step 1 (Dati utente)**:
+  - l’utente inserisce nome/cognome/email
+  - la UI costruisce token personali (es. nome, cognome, parti dell’email) da passare all’engine
+
+- **Step 2 (Password)**:
+  - ad ogni input password la UI invoca:
+    - `evaluate(password, personalTokens)` → score/level/pattern
+    - `generateFeedback(evaluation)` → suggerimenti
+  - al submit finale invoca:
+    - `validateFinal(password, personalTokens)` → `{ ok, msg }`
+  - se `ok=false`, mostra il messaggio e blocca la creazione account
+
+---
+
+## Integrazione con API (DS2)
+La UI attuale usa l’engine in-browser.
+Se vuoi usare l’API (DS2) al posto dell’engine locale, l’approccio consigliato è:
+- mantenere la UI invariata
+- sostituire la chiamata diretta a `evaluate(...)` con una `fetch` verso:
+  - `POST /api/evaluate` (opzione `includeFeedback`)
+- sostituire `validateFinal(...)` con:
+  - `POST /api/validate`
+
+Questo passaggio è opzionale: DS1 è già coperto anche senza backend.
+
+---
+
+## Troubleshooting
+- **Schermata bianca / errori “PSMEngine undefined”**:
+  - stai servendo la cartella sbagliata o aprendo via `file://`
+  - soluzione: `cd src` e avvia un server locale, poi apri `/web/`
+- **Il path dell’engine non si risolve**:
+  - assicurati che `src/engine/psmEngine.js` esista e che `index.html` lo referenzi come `../engine/psmEngine.js`
