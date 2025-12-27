@@ -177,7 +177,14 @@
   function renderDetail(runId, detail) {
     // detail shape: { runId, meta, results } oppure simile
     const meta = detail.meta || {};
-    const results = detail.results || detail.records || detail.data || [];
+    const results =
+      detail.resultsPreview ||
+      detail.results ||
+      detail.records ||
+      detail.data ||
+      detail.items ||
+      [];
+
 
     const createdAt = meta.createdAt || meta.timestamp || meta.ts || meta.date || null;
     const ds = meta.dataset || meta.datasetName || null;
