@@ -1,18 +1,16 @@
-# PSM_Project — API (DS2) + Experiments API (DS4/DS5 backend)
+# PSM_Project — API (DS2) + Experiments backend (DS4/DS5)
 
-Servizio REST che espone:
-- **DS2**: valutazione password e validazione finale (policy) usando l’engine condiviso
-- **Supporto DS4/DS5 lato backend**: lettura dei risultati degli esperimenti e **export** (CSV/TSV/ExcelCSV/JSON)
+Questa cartella contiene la REST API del progetto:
+- **DS2**: valutazione e validazione password usando il **PSM Engine** (single source of truth)
+- **DS4/DS5 (supporto backend)**: endpoint per consultare run esperimenti salvati in `src/experiments/outputs/` ed esportarli (CSV/TSV/ExcelCSV/JSON)
 
-Questo README è aggiornato al **23/12/2025**.
+Aggiornato al **27/12/2025**.
 
 ---
 
 ## Requisiti
-- Node.js **>= 18** (consigliato 20)
+- Node.js **>= 18**
 - npm
-
-> Nota: l’engine è in `src/engine/psmEngine.js` ed è la **single source of truth** per scoring/pattern/policy.
 
 ---
 
@@ -23,222 +21,169 @@ npm install
 npm start
 ~~~
 
-Di default ascolta su:
+API su:
 - `http://localhost:3000`
 
-Variabili utili:
-- `PORT` (default `3000`)
-- `PSM_API_KEY` (opzionale, vedi sotto)
+Health check:
+~~~bash
+curl.exe -s http://localhost:3000/health
+~~~
+
+> Nota PowerShell (Windows): usare `curl.exe` (non l’alias `Invoke-WebRequest`), altrimenti opzioni come `-s`/`-S`/`-f` possono fallire.
 
 ---
 
-## (Opzionale) Protezione con API Key
-Se imposti `PSM_API_KEY`, l’API richiede l’header `x-api-key` sulle rotte principali.
+## Sicurezza (opzionale): API key
+Se imposti la variabile d’ambiente `PSM_API_KEY`, la API richiede l’header `x-api-key`.
 
-Esempio:
+Esempio (Windows PowerShell):
 ~~~bash
-PSM_API_KEY=changeme npm start
+$env:PSM_API_KEY="changeme"
+npm start
 ~~~
 
-E poi nelle chiamate:
+Chiamata con header:
 ~~~bash
-curl -H "x-api-key: changeme" ...
+curl.exe -s http://localhost:3000/api/evaluate ^
+  -H "Content-Type: application/json" ^
+  -H "x-api-key: changeme" ^
+  -d "{\"password\":\"ExamplePassword!2026\"}"
 ~~~
+
+Comportamento:
+- senza header → 401/403
+- header errata → 403
+- header corretta → OK
 
 ---
 
-## Endpoints
+## Endpoint DS2 — Valutazione / Validazione
 
-### Healthcheck
-**GET** `/health`
+### POST /api/evaluate
+Valuta una password e ritorna score/level/pattern. Può includere feedback e supporta token personali.
 
-Esempio:
-~~~bash
-curl -sSf http://localhost:3000/health
-~~~
-
-Risposta:
-~~~json
-{ "ok": true, "service": "psm-api" }
-~~~
-
----
-
-## DS2 — Valutazione password
-
-### Valuta (standard)
-**POST** `/api/evaluate`  
-Alias legacy: **POST** `/evaluatePassword`
-
-Body minimo:
+Request minima:
 ~~~json
 { "password": "ExamplePassword!2026" }
 ~~~
 
-Body completo (con dati utente per token personali):
+Request completa (con contesto utente):
 ~~~json
 {
   "password": "MarioRossi2026!",
-  "user": {
-    "firstName": "Mario",
-    "lastName": "Rossi",
-    "email": "mario.rossi@example.com"
-  },
+  "user": { "firstName": "Mario", "lastName": "Rossi", "email": "mario.rossi@example.com" },
   "options": { "includeFeedback": true }
 }
 ~~~
 
-Esempio curl:
-~~~bash
-curl -sSf http://localhost:3000/api/evaluate \
-  -H "Content-Type: application/json" \
-  -d '{"password":"ExamplePassword!2026","options":{"includeFeedback":true}}'
-~~~
-
-Risposta (schema):
+Response tipica:
 ~~~json
 {
-  "score": 0,
-  "level": "Molto debole",
-  "patterns": [],
-  "suggestions": []
+  "ok": true,
+  "score": 69,
+  "level": "Buona",
+  "patterns": ["YEAR_OR_DATE", "PERSONAL_INFO"],
+  "feedback": {
+    "tips": ["Evita riferimenti personali", "Evita anni o date riconoscibili"]
+  }
 }
 ~~~
 
-Note:
-- `score` è 0..100
-- `level` è una stringa umana
-- `patterns` è una lista di pattern rilevati (oggetti)
-- `suggestions` compare solo se `options.includeFeedback=true`
+Alias compatibile:
+- `POST /evaluatePassword` (stesso comportamento)
 
 ---
 
-## DS2 — Validazione finale (policy)
-Questa rotta serve per il “submit finale” (es. creazione account): applica la policy di accettazione.
+### POST /api/validate
+Applica la policy finale: serve per decidere se la password è **accettata** per la registrazione.
 
-**POST** `/api/validate`
-
-Body minimo:
+Request:
 ~~~json
 { "password": "ExamplePassword!2026" }
 ~~~
 
-Body con dati utente:
+Response:
 ~~~json
 {
-  "password": "MarioRossi2026!",
-  "user": { "firstName": "Mario", "lastName": "Rossi", "email": "mario.rossi@example.com" }
+  "ok": false,
+  "score": 52,
+  "level": "Debole",
+  "reasons": ["PASSWORD_TOO_SHORT", "MISSING_SYMBOL"]
 }
-~~~
-
-Esempio curl:
-~~~bash
-curl -sSf http://localhost:3000/api/validate \
-  -H "Content-Type: application/json" \
-  -d '{"password":"ExamplePassword!2026"}'
-~~~
-
-Risposta:
-~~~json
-{ "ok": true, "msg": "OK" }
 ~~~
 
 ---
 
-## Experiments API — Supporto DS4/DS5 lato backend
+## Endpoint DS4/DS5 — Experiments (consultazione ed export)
 
-### Dove legge i risultati
-Queste rotte leggono i run da:
+Questi endpoint leggono i risultati salvati dagli esperimenti in:
 - `src/experiments/outputs/<runId>/`
 
-Quindi prima devi avere almeno un run generato dal runner in `src/experiments/`.
-
----
-
-### Lista run (supporto DS4)
-**GET** `/experiments`
+### GET /experiments
+Lista run disponibili.
 
 Esempio:
 ~~~bash
-curl -sSf http://localhost:3000/experiments
-~~~
-
-Risposta:
-~~~json
-{ "runs": ["runA", "runB"] }
+curl.exe -s http://localhost:3000/experiments
 ~~~
 
 ---
 
-### Dettaglio run (preview)
-**GET** `/experiments/:runId?limit=20`
-
-- `limit` controlla quanti record di preview ritornano (default ragionevole lato server)
+### GET /experiments/:runId?limit=N
+Dettaglio run con meta + aggregati + preview (N record).  
+Nota: la preview può essere esposta come `resultsPreview` (chiave usata dalla dashboard DS4).
 
 Esempio:
 ~~~bash
-curl -sSf "http://localhost:3000/experiments/runA?limit=10"
-~~~
-
-Risposta (schema):
-~~~json
-{
-  "runId": "runA",
-  "meta": { },
-  "resultsPreview": [ ]
-}
+curl.exe -s "http://localhost:3000/experiments/sample_run?limit=10"
 ~~~
 
 ---
 
-### Export risultati (DS5)
-**GET** `/experiments/:runId/export?format=csv|tsv|excelcsv|json`
+### GET /experiments/:runId/export?format=...
+Export supportati:
+- `format=json`
+- `format=csv`
+- `format=tsv`
+- `format=excelcsv` (separatore `;`, utile in Excel locale IT)
 
-Formati:
-- `csv` -> separatore `,`
-- `tsv` -> separatore `\t`
-- `excelcsv` -> separatore `;` (comodo per Excel in locale IT)
-- `json` -> contenuto JSON
-
-Esempi:
+Esempio (CSV):
 ~~~bash
-curl -sSf "http://localhost:3000/experiments/runA/export?format=csv" -o results.csv
-curl -sSf "http://localhost:3000/experiments/runA/export?format=tsv" -o results.tsv
-curl -sSf "http://localhost:3000/experiments/runA/export?format=excelcsv" -o results_excel.csv
-curl -sSf "http://localhost:3000/experiments/runA/export?format=json" -o results.json
+curl.exe -s "http://localhost:3000/experiments/sample_run/export?format=csv" -o results.csv
 ~~~
 
 ---
 
-## Generare un run (quick reminder)
-Se non hai ancora `outputs/<runId>/`, genera un run così:
+## Integrazione con Dashboard (DS4)
+La dashboard è in:
+- `src/web/experiments.html`
+- `src/web/experiments.js`
 
-~~~bash
-cd src/experiments
-npm install
-
-node tools/generate_dataset.js datasets/dataset_v1.json 20 --seed 12345
-node run.js --in datasets/dataset_v1.json --out outputs/run_dataset_v1_local --redact-password --seed 12345
-~~~
-
-Poi torna qui e usa:
-- `GET http://localhost:3000/experiments`
-- `GET http://localhost:3000/experiments/run_dataset_v1_local?limit=20`
-- `GET http://localhost:3000/experiments/run_dataset_v1_local/export?format=csv`
+Requisiti per usarla:
+1) API avviata su `http://localhost:3000`
+2) almeno 1 run in `src/experiments/outputs/` (es. `npm run run:sample` in `src/experiments`)
+3) servire `src/` come root (per aprire `http://localhost:8080/web/experiments.html`)
 
 ---
 
 ## Troubleshooting
-- **403 / Unauthorized**: hai impostato `PSM_API_KEY` ma non stai passando `x-api-key`.
-- **404 su /experiments/:runId**: la cartella `src/experiments/outputs/<runId>/` non esiste (o `runId` sbagliato).
-- **UI non carica engine via API**: la UI (DS1) usa l’engine in-browser; l’API serve per DS2 e per consumare risultati esperimenti.
+- **/experiments vuoto**:
+  - non esistono run in `src/experiments/outputs/`
+  - genera una run in `src/experiments` e riprova
+- **/experiments/:runId 404**:
+  - runId inesistente o cartella output mancante
+- **export scarica un file vuoto**:
+  - controlla che in `outputs/<runId>/` esista `results.json`
+- **PowerShell error su curl**:
+  - usare `curl.exe` (non `curl`)
 
 ---
 
-## Design note (coerenza)
-- Tutte le soglie/policy vivono nell’engine (`src/engine/psmEngine.js`).
-- L’API deve limitarsi a:
-  - estrarre eventuali `personalTokens` dal campo `user`
-  - invocare `evaluate(...)` / `validateFinal(...)`
-  - ritornare JSON consistente
+## Nota architetturale: single source of truth
+- L’engine in `src/engine/psmEngine.js` definisce scoring, pattern, feedback e policy finale.
+- L’API non deve duplicare regole/soglie: deve importare e usare l’engine.
+- Ogni modifica alle policy va fatta nell’engine, poi verificata con test e regressioni.
+
+
+
 
