@@ -1,28 +1,29 @@
-# Relazione finale (PSM_Project) — Struttura, contenuti e riferimenti alla repo
+# docs/05_relazione — Relazione finale
 
-Questa cartella contiene (o conterrà) la relazione finale del progetto. Lo scopo di questo README è fornire una struttura pronta, coerente e “a prova di consegna”, così da trasformare rapidamente i materiali già presenti in repo (UML, prototipo, contratti, test plan, metodologia sperimentale) in un documento completo. L’idea è semplice: ogni sezione della relazione deve puntare a file e cartelle già presenti nella repository, riducendo testo ridondante e massimizzando tracciabilità. Se il team lavora in parallelo, questo indice funge da checklist: quando tutte le sezioni hanno contenuti reali e riferimenti, la relazione è pronta.
+Questa cartella è destinata alla relazione finale del progetto (testo, immagini, risultati sperimentali).
 
-Titolo consigliato: “Password Strength Meter Engine (PSM_Project): progettazione, implementazione e valutazione sperimentale”. La relazione deve includere almeno: obiettivo del progetto, requisiti e vincoli, modellazione UML, architettura e scelte di progetto, implementazione (in modo ragionato, non “codice incollato”), strategia di test e risultati della valutazione sperimentale, conclusioni e limiti. Di seguito una struttura completa, con indicazione di cosa scrivere e da dove prendere i materiali in repo.
+Aggiornato al **27/12/2025**.
 
-1) Introduzione e contesto. In questa sezione spiegare il problema: perché la sola complessità sintattica non basta, perché un meter deve penalizzare pattern comuni e suggerire miglioramenti in tempo reale. Presentare in 1–2 paragrafi lo scopo del progetto e cosa avete realizzato: un prototipo web con valutazione real-time, un engine modulare (o in via di modularizzazione), una API di valutazione (se implementata), e un modulo sperimentale per confrontare risultati ed esportare dati. Collegare subito la struttura della repo: codice in `src/`, documentazione in `docs/`, test in `tests/`. Riferimenti: README root della repo e `src/web/` per la demo.
+---
 
-2) Requisiti e vincoli (anche non funzionali). Qui riportare requisiti funzionali (valutazione real-time, score e livello, suggerimenti, penalità per pattern, penalità per info personali quando disponibili, validazione finale) e requisiti non funzionali (determinismo, performance adeguata alla digitazione, usabilità dei suggerimenti, manutenibilità tramite separazione moduli). Inserire anche eventuali vincoli della consegna e di riproducibilità (esecuzione demo, organizzazione repo). Riferimenti principali: `docs/00_specs/Specifiche_Progetto_Richieste.pdf` e le note operative presenti in `docs/00_specs/` (oltre al vostro README root).
+## Contenuti attesi (deliverable)
+- Introduzione e obiettivi (DS1–DS5)
+- Architettura e scelte progettuali (Engine SSOT, separazione UI/API)
+- Implementazione (punti chiave, endpoint, pattern principali)
+- Esperimenti:
+  - dataset usati
+  - confronto con baseline (zxcvbn)
+  - export e analisi (tabelle/grafici)
+- Test:
+  - test plan manuale (`/tests/README.md`)
+  - test automatici (quando aggiunti)
+- Conclusioni e possibili estensioni
 
-3) Analisi e specifica del problema. Descrivere in modo più concreto cosa si intende per “password debole”: sequenze, ripetizioni, parole comuni, small-set (mesi/giorni/colori/città/nomi/animali/squadre), riferimenti riconoscibili (es. pop culture), e contenuto legato all’utente. Spiegare perché queste categorie sono rilevanti e come influenzano la qualità di un strength meter. Qui potete usare esempi qualitativi (senza necessariamente riportare l’intero set test). Riferimenti: `tests/README.md` (batteria casi) e `src/web/app.js` (logica prototipo) se serve citare comportamenti.
+---
 
-4) Modellazione UML: Use Case e Sequence. In questa sezione includere i diagrammi e spiegare in modo sintetico gli scenari. Per i Use Case: attori, confini sistema, casi principali e alternative. Per i Sequence: descrivere DS1–DS5 e indicare come la repository li realizza o intende realizzarli (DS1 = UI+engine real-time, DS2 = API, DS3–DS5 = esperimenti/export). Non serve riscrivere i diagrammi: basta inserirli e commentarli in modo leggibile. Riferimenti diretti: `docs/02_uml/use-case/` e `docs/02_uml/sequence/`.
-
-5) Architettura e progettazione. Qui presentare l’architettura modulare del progetto: `WebUI` in `src/web/`, `Engine` in `src/engine/` come single source of truth, `API` in `src/api/` come adattatore di trasporto, `Experiments` in `src/experiments/` come runner batch e confronto baseline. Spiegare le dipendenze unidirezionali (web → engine, api → engine, experiments → engine) e perché questa scelta riduce duplicazioni e aumenta testabilità. Inserire (o rimandare a) il diagramma delle classi/componenti e descrivere le interfacce chiave: `evaluate`, `generateFeedback`, `validateFinal`, e l’uso di `personalTokens`. Riferimenti: `docs/03_architettura/README.md` e tutti i README dei moduli in `src/`.
-
-6) Dettagli implementativi essenziali (senza “dump” di codice). Questa sezione non deve essere un elenco di funzioni, ma una spiegazione ragionata di come l’engine calcola il punteggio e come integra bonus/penalità, pattern detection e cap al punteggio, oltre a come genera suggerimenti. Includere anche la logica di contesto: come vengono derivati e usati `personalTokens` e quali sono le regole di normalizzazione. Se l’API è implementata, descrivere in modo breve gli endpoint e la struttura request/response; se non è implementata, descrivere comunque il contratto (DS2) e rimandare al README dell’API. Riferimenti: `src/engine/README.md` (contratto) e `src/api/README.md` (endpoint) e, per la demo, `src/web/`.
-
-7) Testing: strategia e casi. Inserire il test plan minimo e spiegare come viene eseguito: manualmente sulla demo, e/o tramite invocazione engine/API. Importante: dimostrare copertura dei pattern critici e dei casi noti di sovrastima, e mostrare coerenza tra livello e suggerimenti. Non serve riportare tutti i test come tabella lunga nel corpo: potete inserire una tabella sintetica in relazione e lasciare la lista completa in allegato o in repo. Riferimenti: `tests/README.md`.
-
-8) Valutazione sperimentale: metodologia, baseline e risultati. Questa sezione deve contenere (a) descrizione dataset e composizione, (b) baseline selezionata e motivazione, (c) metriche e procedura di esecuzione, (d) grafici e tabelle principali, (e) discussione critica e minacce alla validità. L’obiettivo è mostrare che i risultati derivano da export replicabili e che il confronto con baseline evidenzia punti di forza e limiti del vostro meter. Riferimenti: `docs/04_valutazione_sperimentale/README.md` e `src/experiments/README.md` (formati, export).
-
-9) Conclusioni e sviluppi futuri. Riassumere in modo concreto cosa avete ottenuto, quali scelte sono risultate efficaci (es. penalità su pattern prevedibili, gestione info personali, coerenza feedback), quali sono i limiti (dipendenza dal dataset, taratura soglie, copertura dizionari, definizione baseline) e quali estensioni future avrebbero senso (migliore stima di guessability, ampliamento dizionari, valutazione multi-lingua, miglioramento UX suggerimenti, pipeline esperimenti più ampia).
-
-10) Riferimenti bibliografici e allegati. Inserire riferimenti ai paper realmente usati e citati nel testo; come allegati o rimandi, includere i diagrammi UML, estratti di risultati sperimentali, e (se richiesto) ulteriori specifiche. Evitare di citare materiale generico non usato. Come allegati “repo-based”, potete rimandare a percorsi `docs/02_uml/...`, `tests/README.md` e `docs/04_valutazione_sperimentale/...`.
-
-Checklist pratica per considerare la relazione “pronta”: ogni sezione sopra deve avere almeno un contenuto reale e un riferimento a file/cartelle della repo; UML inserito e commentato; architettura descritta e coerente con la struttura `src/`; test plan presente; valutazione sperimentale con almeno un run documentato (dataset descritto, export e grafici); conclusioni con limiti e sviluppi futuri. Se tutte queste parti sono presenti, la relazione risulta completa, credibile e verificabile.
-
+## Stato attuale
+- Il progetto è completo lato codice per DS1–DS5.
+- Da integrare nella relazione:
+  - risultati esperimenti “ufficiali”
+  - 2–3 grafici/tabelle
+  - test automatici + CI (quando completati)
