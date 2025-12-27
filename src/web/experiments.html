@@ -1,0 +1,109 @@
+<!doctype html>
+<html lang="it">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>PSM Experiments Dashboard</title>
+
+  <style>
+    :root { color-scheme: light; }
+    body { font-family: system-ui, -apple-system, Segoe UI, Roboto, sans-serif; margin: 0; }
+    header { padding: 16px 20px; border-bottom: 1px solid #e5e7eb; display:flex; gap:12px; align-items:center; justify-content:space-between; }
+    header h1 { font-size: 16px; margin: 0; }
+    main { display: grid; grid-template-columns: 360px 1fr; gap: 16px; padding: 16px; }
+    .card { border: 1px solid #e5e7eb; border-radius: 12px; padding: 14px; }
+    .muted { color: #6b7280; font-size: 12px; }
+    .row { display:flex; gap:10px; align-items:center; flex-wrap: wrap; }
+    input, select, button { font: inherit; padding: 8px 10px; border: 1px solid #d1d5db; border-radius: 10px; }
+    button { cursor: pointer; }
+    button.primary { border-color: #111827; }
+    table { width:100%; border-collapse: collapse; }
+    th, td { padding: 8px 6px; border-bottom: 1px solid #f1f5f9; text-align:left; font-size: 13px; }
+    tr:hover { background: #fafafa; }
+    .pill { display:inline-block; padding: 2px 8px; border: 1px solid #e5e7eb; border-radius: 999px; font-size: 12px; }
+    .grid2 { display:grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+    pre { margin: 0; padding: 10px; background:#0b1020; color:#e5e7eb; border-radius: 10px; overflow:auto; font-size: 12px; }
+    .error { color: #b91c1c; }
+    .ok { color: #065f46; }
+    a { color: inherit; }
+    @media (max-width: 960px) {
+      main { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div>
+      <h1>PSM — Experiments Dashboard (DS4)</h1>
+      <div class="muted">Legge le run da <span class="pill" id="apiBasePill"></span></div>
+    </div>
+
+    <div class="row">
+      <button id="btnRefresh" class="primary">Aggiorna</button>
+      <a class="muted" href="./index.html">Torna alla UI</a>
+    </div>
+  </header>
+
+  <main>
+    <!-- Left: runs list -->
+    <section class="card">
+      <div class="row" style="justify-content:space-between;">
+        <strong>Run disponibili</strong>
+        <span class="muted" id="runsCount">—</span>
+      </div>
+
+      <div class="row" style="margin-top:10px;">
+        <input id="searchRunId" type="text" placeholder="Cerca runId..." style="flex:1; min-width: 180px;" />
+        <select id="sortRuns">
+          <option value="desc">Ordina: più recenti</option>
+          <option value="asc">Ordina: meno recenti</option>
+        </select>
+      </div>
+
+      <div style="margin-top:12px; max-height: 62vh; overflow:auto;">
+        <table>
+          <thead>
+            <tr>
+              <th>runId</th>
+              <th class="muted">records</th>
+            </tr>
+          </thead>
+          <tbody id="runsTbody">
+            <tr><td colspan="2" class="muted">Caricamento…</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="muted" style="margin-top:10px;">
+        Se la lista è vuota, esegui prima un esperimento (<code>npm run run:sample</code>) o una run custom.
+      </div>
+    </section>
+
+    <!-- Right: run detail -->
+    <section class="card">
+      <div class="row" style="justify-content:space-between;">
+        <div>
+          <strong>Dettaglio run</strong>
+          <div class="muted" id="selectedRunMeta">Seleziona una run a sinistra.</div>
+        </div>
+
+        <div class="row">
+          <label class="muted">Preview</label>
+          <select id="previewLimit">
+            <option value="25">25</option>
+            <option value="50" selected>50</option>
+            <option value="100">100</option>
+            <option value="200">200</option>
+          </select>
+        </div>
+      </div>
+
+      <div id="detailArea" style="margin-top: 12px;">
+        <div class="muted">Nessuna run selezionata.</div>
+      </div>
+    </section>
+  </main>
+
+  <script src="./experiments.js"></script>
+</body>
+</html>
