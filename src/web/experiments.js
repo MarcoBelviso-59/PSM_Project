@@ -305,14 +305,56 @@
     elRunsCount.textContent = "—";
 
     try {
-      const runs = await apiGet("/experiments");
-      state.runs = Array.isArray(runs) ? runs : (runs.runs || []);
-      renderRuns();
+    const runsResp = await apiGet("/experiments");
+const rawRuns = Array.isArray(runsResp) ? runsResp : (runsResp.runs || []);
 
-      // auto-select prima run se nessuna selezionata
-      if (!state.selectedRunId && state.runs.length > 0) {
-        await selectRun(state.runs[0].runId);
-      } else if (state.selectedRunId) {
+// Normalizza: accetta runId oppure id/name/folder/dir/path
+state.runs = rawRuns
+  .map(r => {
+    const candidate =
+      r.runId ??
+      r.id ??
+      r.run ??
+      r.name ??
+      r.folder ??
+      r.dir ??
+      r.path ??
+      r.slug;
+
+    let runId = candidate;
+
+    // se è un path tipo "outputs/sample_run", prendi l'ultimo segmento
+    if (typeof runId === "string" && runId.includes("/")) {
+      runId = runId.split("/").filter(Boolean).pop();
+    }
+
+    const totalRecords =
+      r.totalRecords ??
+      r.records ??
+      r.count ??
+      r.n ??
+      (typeof r.total === "number" ? r.total : undefined);
+
+    return { ...r, runId, totalRecords };
+  })
+  .filter(r => typeof r.runId === "string" && r.runId.trim().length > 0);
+
+renderRuns();
+
+// auto-select prima run se nessuna selezionata
+if (!state.selectedRunId && state.runs.length > 0) {
+  await selectRun(state.runs[0].runId);
+} else if (state.selectedRunId) {
+  const stillThere = state.runs.some(r => r.runId === state.selectedRunId);
+  if (stillThere) await selectRun(state.selectedRunId);
+  else {
+    state.selectedRunId = null;
+    elSelectedRunMeta.textContent = "Seleziona una run a sinistra.";
+    elDetailArea.innerHTML = `<div class="muted">Nessuna run selezionata.</div>`;
+  }
+}
+
+      else if (state.selectedRunId) {
         // se esiste ancora, ricarica il dettaglio
         const stillThere = state.runs.some(r => r.runId === state.selectedRunId);
         if (stillThere) await selectRun(state.selectedRunId);
