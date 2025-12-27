@@ -200,16 +200,17 @@
     const stats = computeStats(results);
 
     // Export links (diretti)
-    const exportBase = `${API_BASE}/experiments/${encodeURIComponent(runId)}/export`;
-    const exportLinks = `
-      <div class="row" style="margin-top:8px;">
-        <span class="muted">Export:</span>
-        <a class="pill" href="${exportBase}?format=json" target="_blank" rel="noreferrer">JSON</a>
-        <a class="pill" href="${exportBase}?format=csv" target="_blank" rel="noreferrer">CSV</a>
-        <a class="pill" href="${exportBase}?format=tsv" target="_blank" rel="noreferrer">TSV</a>
-        <a class="pill" href="${exportBase}?format=excelcsv" target="_blank" rel="noreferrer">ExcelCSV</a>
-      </div>
-    `;
+   const exportBase = `${API_BASE}/experiments/${encodeURIComponent(runId)}/export`;
+   const exportLinks = `
+  <div class="ds4-row" style="margin-top:8px;">
+    <span class="ds4-muted">Export:</span>
+    <a class="ds4-badge" href="${exportBase}?format=json" target="_blank" rel="noreferrer">JSON</a>
+    <a class="ds4-badge" href="${exportBase}?format=csv" target="_blank" rel="noreferrer">CSV</a>
+    <a class="ds4-badge" href="${exportBase}?format=tsv" target="_blank" rel="noreferrer">TSV</a>
+    <a class="ds4-badge" href="${exportBase}?format=excelcsv" target="_blank" rel="noreferrer">ExcelCSV</a>
+  </div>
+`;
+
 
     const overallTable = `
       <table style="margin-top:10px;">
