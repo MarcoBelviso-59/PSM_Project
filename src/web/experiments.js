@@ -301,76 +301,84 @@
   }
 
   async function refreshRuns() {
-    elRunsTbody.innerHTML = `<tr><td colspan="2" class="muted">Caricamento…</td></tr>`;
-    elRunsCount.textContent = "—";
+  elRunsTbody.innerHTML = `<tr><td colspan="2" class="muted">Caricamento…</td></tr>`;
+  elRunsCount.textContent = "—";
 
-    try {
+  try {
     const runsResp = await apiGet("/experiments");
-const rawRuns = Array.isArray(runsResp) ? runsResp : (runsResp.runs || []);
+    const rawRuns = Array.isArray(runsResp) ? runsResp : (runsResp.runs || []);
 
-// Normalizza: accetta runId oppure id/name/folder/dir/path
-state.runs = rawRuns
-  .map(r => {
-    const candidate =
-      r.runId ??
-      r.id ??
-      r.run ??
-      r.name ??
-      r.folder ??
-      r.dir ??
-      r.path ??
-      r.slug;
+    // Normalizza: supporta array di stringhe/numero e oggetti con campi diversi
+    state.runs = rawRuns
+      .map((r) => {
+        // Caso: ["sample_run", ...] oppure [123, ...]
+        if (typeof r === "string" || typeof r === "number") {
+          return { runId: String(r), totalRecords: undefined };
+        }
 
-    let runId = candidate;
+        // Caso: oggetto
+        if (!r || typeof r !== "object") return null;
 
-    // se è un path tipo "outputs/sample_run", prendi l'ultimo segmento
-    if (typeof runId === "string" && runId.includes("/")) {
-      runId = runId.split("/").filter(Boolean).pop();
+        const candidate =
+          r.runId ??
+          r.run_id ??
+          r.runID ??
+          r.runid ??
+          r.id ??
+          r.run ??
+          r.name ??
+          r.folder ??
+          r.dir ??
+          r.path ??
+          r.slug ??
+          (r.meta && (r.meta.runId ?? r.meta.id ?? r.meta.name));
+
+        let runId = candidate;
+
+        // se è un path tipo "outputs/sample_run", prendi l'ultimo segmento
+        if (typeof runId === "string" && runId.includes("/")) {
+          runId = runId.split("/").filter(Boolean).pop();
+        }
+
+        if (typeof runId === "number") runId = String(runId);
+
+        const totalRecords =
+          r.totalRecords ??
+          r.records ??
+          r.count ??
+          r.n ??
+          (typeof r.total === "number" ? r.total : undefined);
+
+        return { ...r, runId, totalRecords };
+      })
+      .filter((r) => r && typeof r.runId === "string" && r.runId.trim().length > 0);
+
+    renderRuns();
+
+    // auto-select prima run se nessuna selezionata
+    if (!state.selectedRunId && state.runs.length > 0) {
+      await selectRun(state.runs[0].runId);
+      return;
     }
 
-    const totalRecords =
-      r.totalRecords ??
-      r.records ??
-      r.count ??
-      r.n ??
-      (typeof r.total === "number" ? r.total : undefined);
-
-    return { ...r, runId, totalRecords };
-  })
-  .filter(r => typeof r.runId === "string" && r.runId.trim().length > 0);
-
-renderRuns();
-
-// auto-select prima run se nessuna selezionata
-if (!state.selectedRunId && state.runs.length > 0) {
-  await selectRun(state.runs[0].runId);
-} else if (state.selectedRunId) {
-  const stillThere = state.runs.some(r => r.runId === state.selectedRunId);
-  if (stillThere) await selectRun(state.selectedRunId);
-  else {
-    state.selectedRunId = null;
-    elSelectedRunMeta.textContent = "Seleziona una run a sinistra.";
-    elDetailArea.innerHTML = `<div class="muted">Nessuna run selezionata.</div>`;
+    // se esiste una selezione, ricarica il dettaglio se la run esiste ancora
+    if (state.selectedRunId) {
+      const stillThere = state.runs.some((r) => r.runId === state.selectedRunId);
+      if (stillThere) {
+        await selectRun(state.selectedRunId);
+      } else {
+        state.selectedRunId = null;
+        elSelectedRunMeta.textContent = "Seleziona una run a sinistra.";
+        elDetailArea.innerHTML = `<div class="muted">Nessuna run selezionata.</div>`;
+      }
+    }
+  } catch (err) {
+    elRunsTbody.innerHTML = `<tr><td colspan="2" class="error">Errore: ${esc(err.message || String(err))}</td></tr>`;
+    elRunsCount.textContent = "errore";
+    elSelectedRunMeta.textContent = "Impossibile caricare run.";
+    renderError("caricando /experiments", err);
   }
 }
-
-      else if (state.selectedRunId) {
-        // se esiste ancora, ricarica il dettaglio
-        const stillThere = state.runs.some(r => r.runId === state.selectedRunId);
-        if (stillThere) await selectRun(state.selectedRunId);
-        else {
-          state.selectedRunId = null;
-          elSelectedRunMeta.textContent = "Seleziona una run a sinistra.";
-          elDetailArea.innerHTML = `<div class="muted">Nessuna run selezionata.</div>`;
-        }
-      }
-    } catch (err) {
-      elRunsTbody.innerHTML = `<tr><td colspan="2" class="error">Errore: ${esc(err.message || String(err))}</td></tr>`;
-      elRunsCount.textContent = "errore";
-      elSelectedRunMeta.textContent = "Impossibile caricare run.";
-      renderError("caricando /experiments", err);
-    }
-  }
 
   // events
   elBtnRefresh.addEventListener("click", refreshRuns);
