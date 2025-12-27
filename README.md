@@ -5,8 +5,9 @@ Progetto di Ingegneria del Software (A.A. 2025/2026): realizzazione di un **Pass
 - **Engine**: scoring 0–100, pattern detection, suggerimenti, policy di validazione finale
 - **API REST (DS2)**: valutazione/validazione usando lo stesso engine (“single source of truth”)
 - **Esperimenti (DS3–DS5)**: confronto con baseline (zxcvbn), output persistiti ed export via API
+- **Dashboard (DS4)**: pagina web per consultare run, statistiche e download export
 
-Questo README è aggiornato al **23/12/2025**.
+Questo README è aggiornato al **27/12/2025**.
 
 ## Team
 - Belviso M.
@@ -19,16 +20,19 @@ Questo README è aggiornato al **23/12/2025**.
 - ✅ **Engine separato**: modulo condiviso (`src/engine/psmEngine.js`) usato da UI/API/esperimenti.
 - ✅ **DS2 (API REST)**: endpoint di valutazione e validazione con JSON standard + feedback opzionale.
 - ✅ **DS3 (runner esperimenti + baseline)**: esecuzione su dataset + confronto con zxcvbn + output su file.
-- ✅ **DS5 (export)**: export risultati via API (CSV/TSV/ExcelCSV/JSON).
+- ✅ **DS4 (dashboard risultati)**: `src/web/experiments.html` + `src/web/experiments.js` (lista run, dettaglio, statistiche, export).
+- ✅ **DS5 (export)**: export risultati via API (CSV/TSV/ExcelCSV/JSON) + pulsanti in dashboard.
 
-### Da completare
-- ⏳ **DS4 (dashboard risultati)**: UI per lista run, filtri e dettaglio con statistiche (oggi c’è solo API JSON).
+### Da completare (codice + qualità)
 - ⏳ **Test automatizzati** (unit/integration) + integrazione stabile in CI.
-- ⏳ Documentazione finale (relazione + presentazione + diagramma delle classi se richiesto dal corso).
+- ⏳ **Robustezza/cleanup** (normalizzazione shape risposte, uniformare error handling).
+- ⏳ Documentazione finale (relazione + presentazione + eventuale diagramma delle classi se richiesto dal corso).
 
 ## Struttura repository
 - `src/`
-  - `src/web/` — Web UI (DS1): `index.html`, `styles.css`, `app.js`
+  - `src/web/` — Web UI (DS1) + Dashboard (DS4)
+    - `index.html`, `styles.css`, `app.js`
+    - `experiments.html`, `experiments.js`
   - `src/engine/` — Engine condiviso: `psmEngine.js`
   - `src/api/` — API REST (DS2): `server.js`
   - `src/experiments/` — Esperimenti (DS3–DS5): generator + runner + baseline + dataset
@@ -36,24 +40,29 @@ Questo README è aggiornato al **23/12/2025**.
 - `tests/` — piano di test (minimo ripetibile)
 - `.github/workflows/` — pipeline (smoketest API, experiments)
 
-## Quick start — Demo UI (DS1)
-La UI usa l’engine **in-browser**. È importante servire la cartella `src/` come root, perché `src/web/index.html` include l’engine con path relativo `../engine/psmEngine.js`.
+---
 
-### Opzione A (Python)
+# Quick start — UI DS1
+La UI usa l’engine **in-browser**. È importante servire la cartella `src/` come root, perché `src/web/index.html`
+include l’engine con path relativo `../engine/psmEngine.js`.
+
+## Opzione A (Python)
 ~~~bash
 cd src
 python -m http.server 8080
 ~~~
 Apri: `http://localhost:8080/web/`
 
-### Opzione B (Node)
+## Opzione B (Node)
 ~~~bash
 cd src
 npx http-server -p 8080
 ~~~
 Apri: `http://localhost:8080/web/`
 
-## Avvio API (DS2)
+---
+
+# Avvio API (DS2)
 ~~~bash
 cd src/api
 npm install
@@ -61,15 +70,24 @@ npm start
 ~~~
 API su: `http://localhost:3000`
 
-### (Opzionale) API key
+## (Opzionale) API key
 Se imposti `PSM_API_KEY`, l’API richiede l’header `x-api-key`.
 
 ~~~bash
 PSM_API_KEY=changeme npm start
 ~~~
 
-## Esempi chiamate API
-### Valutazione password
+---
+
+# Esempi chiamate API
+> Nota PowerShell (Windows): usa `curl.exe` (non l’alias `Invoke-WebRequest`).
+
+## Health
+~~~bash
+curl.exe -s http://localhost:3000/health
+~~~
+
+## Valutazione password
 Endpoint:
 - `POST /api/evaluate`
 - alias: `POST /evaluatePassword`
@@ -88,15 +106,16 @@ Body con dati utente (token personali):
 }
 ~~~
 
-### Validazione finale (policy di accettazione)
+## Validazione finale (policy di accettazione)
 Endpoint: `POST /api/validate`
-
 ~~~json
 { "password": "ExamplePassword!2026" }
 ~~~
 
-## Esperimenti (DS3–DS5)
-### 1) Esegui un run (Node)
+---
+
+# Esperimenti (DS3–DS5)
+## 1) Esegui un run (Node)
 ~~~bash
 cd src/experiments
 npm install
@@ -115,7 +134,7 @@ Output generato in:
 - `src/experiments/outputs/<runId>/results.tsv`
 - `src/experiments/outputs/<runId>/results_excel.csv`
 
-### 2) Consuma risultati via API (supporto DS4/DS5 via backend)
+## 2) Consuma risultati via API (supporto DS4/DS5 via backend)
 Con API avviata:
 - Lista run: `GET /experiments`
 - Dettaglio run (preview): `GET /experiments/<runId>?limit=20`
@@ -123,8 +142,31 @@ Con API avviata:
 
 Esempio export CSV:
 ~~~bash
-curl -sSf "http://localhost:3000/experiments/<runId>/export?format=csv" -o results.csv
+curl.exe -s "http://localhost:3000/experiments/<runId>/export?format=csv" -o results.csv
 ~~~
+
+---
+
+# Dashboard risultati (DS4)
+La dashboard consuma gli endpoint experiments dell’API.
+
+## Prerequisiti
+1) Avvia l’API:
+~~~bash
+cd src/api
+npm start
+~~~
+2) Assicurati di avere almeno 1 run in `src/experiments/outputs/` (es. eseguendo un run locale).
+
+## Avvio dashboard
+Servi `src/` come root (vedi Quick start UI DS1) e apri:
+- `http://localhost:8080/web/experiments.html`
+
+Funzioni:
+- lista run, dettaglio con statistiche PSM vs zxcvbn, breakdown per categoria
+- export con pulsanti (JSON/CSV/TSV/ExcelCSV)
+
+---
 
 ## Documenti principali
 - Specifiche: `docs/00_specs/Specifiche_Progetto_Richieste.pdf`
@@ -141,4 +183,6 @@ curl -sSf "http://localhost:3000/experiments/<runId>/export?format=csv" -o resul
 
 ## Licenza
 Vedi `LICENSE`.
+
+
 
