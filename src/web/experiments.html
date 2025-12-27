@@ -22,7 +22,19 @@
     .ds4-muted { color: #6b7280; font-size: 12px; }
     .ds4-row { display:flex; gap: 10px; align-items:center; flex-wrap: wrap; }
     .ds4-input, .ds4-select { width: 100%; max-width: 100%; padding: 10px 12px; border-radius: 12px; border: 1px solid #d1d5db; background: #fff; }
-    .ds4-btn { padding: 10px 14px; border-radius: 12px; border: 1px solid #111827; background: #fff; cursor: pointer; }
+    .ds4-btn {
+  padding: 10px 14px;
+  border-radius: 12px;
+  border: 1px solid #111827;
+  background: #fff;
+  cursor: pointer;
+
+  /* FIX: evita che styles.css renda il testo “invisibile” */
+  color: #111827;
+  font-weight: 600;
+}
+.ds4-btn:hover { background: #f9fafb; }
+
     .ds4-link { color: #111827; text-decoration: none; border-bottom: 1px dashed #9ca3af; }
     .ds4-link:hover { border-bottom-color:#111827; }
     .ds4-tablewrap { margin-top: 12px; max-height: 62vh; overflow:auto; border: 1px solid #eef2f7; border-radius: 12px; }
