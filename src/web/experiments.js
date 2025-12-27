@@ -73,7 +73,8 @@
     elRunsTbody.innerHTML = runs.map(r => {
       const isSel = r.runId === state.selectedRunId;
       return `
-        <tr data-runid="${esc(r.runId)}" style="cursor:pointer; ${isSel ? "background:#f8fafc;" : ""}">
+       <tr data-runid="${esc(r.runId)}" class="ds4-runrow ${isSel ? "sel" : ""}">
+
           <td><strong>${esc(r.runId)}</strong></td>
           <td class="muted">${esc(r.totalRecords ?? r.records ?? "—")}</td>
         </tr>
