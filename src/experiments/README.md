@@ -5,8 +5,9 @@ Questa cartella contiene gli strumenti per:
 - eseguire esperimenti confrontando **PSM Engine** con una baseline (**zxcvbn**)
 - salvare risultati su file (raw + formati tabellari)
 - rendere i risultati consultabili/esportabili tramite l’API (`src/api`) che legge da `outputs/`
+- alimentare la **Dashboard DS4** (`src/web/experiments.html`) con lista run, dettaglio e statistiche
 
-Aggiornato al **23/12/2025**.
+Aggiornato al **27/12/2025**.
 
 ---
 
@@ -87,8 +88,11 @@ Parametri principali:
 - `--redact-password`: oscura le password nei risultati (consigliato)
 - `--seed <n>`: memorizza il seed in `meta.json` (tracciabilità)
 
+Nota importante:
+- il flag corretto è **`--redact-password`** (non `--redact password`).
+
 Suggerimento pratico:
-- usa un runId descrittivo (es. `run_2025-12-23_seed12345_v1`) così è facile confrontare.
+- usa un runId descrittivo (es. `run_2025-12-27_seed12345_v1`) così è facile confrontare.
 
 ---
 
@@ -106,7 +110,7 @@ All’interno di `outputs/<runId>/` trovi:
 - `results_excel.csv`
   - tabellare con separatore `;` (più comodo per Excel in locale IT)
 
-> Nota: se usi `--redact-password`, i campi password saranno mascherati nei risultati tabellari.
+> Se usi `--redact-password`, i campi password saranno mascherati (es. `***len:12***`) nei risultati.
 
 ---
 
@@ -114,8 +118,11 @@ All’interno di `outputs/<runId>/` trovi:
 La baseline è incapsulata in:
 - `baselines/zxcvbn.js`
 
-Lo scopo è avere un confronto “esterno” e relativamente standard.
-Il wrapper normalizza il punteggio zxcvbn (0..4) in un range 0..100 per confronto con lo score PSM.
+Scopo:
+- avere un confronto “esterno” e relativamente standard
+- confrontare trend PSM vs baseline in modo difendibile
+
+Il wrapper normalizza il punteggio zxcvbn (0..4) in un range 0..100.
 
 ---
 
@@ -127,13 +134,32 @@ L’API legge i run da:
 
 Endpoint utili:
 - `GET /experiments` → lista run disponibili
-- `GET /experiments/:runId?limit=20` → dettaglio run + preview
+- `GET /experiments/:runId?limit=20` → dettaglio run + preview + aggregati
 - `GET /experiments/:runId/export?format=csv|tsv|excelcsv|json` → download
+
+> Nota PowerShell (Windows): usare `curl.exe` (non l’alias `Invoke-WebRequest`).
 
 Esempio export:
 ~~~bash
-curl -sSf "http://localhost:3000/experiments/run_dataset_v1_local/export?format=excelcsv" -o results_excel.csv
+curl.exe -s "http://localhost:3000/experiments/run_dataset_v1_local/export?format=excelcsv" -o results_excel.csv
 ~~~
+
+---
+
+## Dashboard DS4 (front-end)
+La dashboard è in:
+- `src/web/experiments.html`
+- `src/web/experiments.js`
+
+La dashboard:
+- legge la lista run da `GET /experiments`
+- carica dettaglio/preview con `GET /experiments/:runId?limit=N`
+- mostra statistiche (PSM vs zxcvbn) e breakdown per categoria
+- offre pulsanti export (JSON/CSV/TSV/ExcelCSV)
+
+Prerequisiti:
+1) avvia l’API
+2) assicurati di avere almeno 1 run in `src/experiments/outputs/`
 
 ---
 
@@ -150,33 +176,39 @@ node tools/generate_dataset.js datasets/dataset_v1.json 20 --seed 12345
 node run.js --in datasets/dataset_v1.json --out outputs/run_dataset_v1_local --redact-password --seed 12345
 ~~~
 
-3) Avvia API e scarica export
+3) Avvia API
 ~~~bash
 cd ../api
 npm install
 npm start
 ~~~
 
+4) Apri Dashboard (servendo `src/` come root)
 ~~~bash
-curl -sSf "http://localhost:3000/experiments/run_dataset_v1_local/export?format=csv" -o results.csv
+cd ..
+python -m http.server 8080
 ~~~
+Apri:
+- `http://localhost:8080/web/experiments.html`
 
 ---
 
 ## Troubleshooting
-- **Non vedo run via API**:
-  - verifica che la cartella `src/experiments/outputs/<runId>/` esista davvero
-  - verifica che l’API stia leggendo dalla stessa path (repo root corretta)
+- **Non vedo run via API o dashboard**:
+  - verifica che `src/experiments/outputs/<runId>/` esista davvero e contenga `meta.json` e `results.json`
+  - verifica che l’API sia avviata su `http://localhost:3000` e che `/health` risponda
+- **Export non scarica**:
+  - controlla che il runId esista e prova `format=json` per vedere se la risposta è valida
 - **File CSV “strano” in Excel**:
   - usa `format=excelcsv` (separatore `;`)
-- **Voglio run confrontabili nel tempo**:
+- **Run confrontabili nel tempo**:
   - usa sempre `--seed` e conserva il dataset generato insieme al runId (o versionalo)
 
 ---
 
 ## Note di progetto (coerenza)
 - L’engine in `src/engine/psmEngine.js` è la single source of truth.
-- Gli esperimenti devono servire a:
+- Gli esperimenti servono a:
   - scoprire regressioni (score che cambia “troppo” su categorie note)
   - confrontare trend PSM vs baseline
-  - produrre evidenze per relazione/presentazione (grafici e tabelle a partire dai CSV)
+  - produrre evidenze per relazione/presentazione (grafici e tabelle a partire dagli output)
