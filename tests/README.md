@@ -1,46 +1,53 @@
-# Test Plan (PSM_Project) — Casi minimi, ripetibili e tracciabili
+# Test Plan (PSM_Project) — Manuale ripetibile + collegamento ai test automatici
 
-Questa cartella raccoglie un **piano di test minimo** (ma utile) per verificare in modo rapido e ripetibile che **UI**, **Engine** e **API** producano comportamenti coerenti.
+Questa cartella **`/tests`** contiene un **piano di test manuale** (checklist) per verificare rapidamente e in modo ripetibile che:
+- **UI (DS1)**, **Engine**, **API (DS2)** e **Dashboard (DS4)** restino coerenti;
+- i casi “critici” (sequenze, ripetizioni, dizionari/small-set, token personali, pop culture) siano gestiti correttamente;
+- gli endpoint experiments (DS4/DS5) funzionino (lista, dettaglio, export).
 
-Obiettivo: non “fare test infiniti”, ma avere un set essenziale che copra:
-- pattern critici (sequenze, ripetizioni, dizionari/small-set, info personali)
-- requisiti minimi di accettazione (`validateFinal`)
-- casi limite che in passato hanno generato **sovrastime**
-- coerenza tra canali (stesso input → stesso output qualitativo)
-- consultazione risultati esperimenti via **Dashboard DS4**
+> Importante: i **test automatici** non stanno qui.
+> I test automatici (unit + integration) sono in **`PSM_Project/src/api/__tests__/`** e vengono eseguiti dalla CI.
 
-Aggiornato al **27/12/2025**.
-
----
-
-## Componenti sotto test (single source of truth)
-- **Engine**: `src/engine/psmEngine.js`
-  - `evaluate(password, personalTokens)` → score/level/patterns
-  - `generateFeedback(evaluation)` → suggerimenti
-  - `validateFinal(password, personalTokens)` → { ok, level, score, reasons }
-- **Web UI (DS1)**: `src/web/` (consuma l’engine in-browser)
-- **API (DS2)**: `src/api/` (consuma lo stesso engine)
-- **Esperimenti (DS3–DS5)**: `src/experiments/` (runner + baseline + output)
-- **Dashboard (DS4)**: `src/web/experiments.html` (consuma gli endpoint experiments dell’API)
+Aggiornato al **29/12/2025**.
 
 ---
 
-## Regole del test plan (stabilità)
+## 1) Cosa testiamo e dove (mappa rapida)
+
+### A) Test automatici (CI / Jest) ✅
+- Path: `PSM_Project/src/api/__tests__/`
+- Scopo: impedire regressioni su engine + API (evaluate/validate + experiments/export).
+- Esecuzione locale:
+  - vai in `PSM_Project/src/api`
+  - `npm install`
+  - `npm test`
+- Esecuzione su GitHub: workflow CI (verde).
+
+### B) Test manuali (questa cartella `/tests`) ✅
+- Scopo: checklist per demo e verifica “umana” end-to-end:
+  - UI DS1 (valutazione live + submit)
+  - Dashboard DS4 (lista/dettaglio/statistiche/export)
+  - chiamate API via curl (utile anche in Windows)
+- Nota: questi test sono “ripetibili”, non “infiniti”: pochi casi ma buoni.
+
+---
+
+## 2) Regole del test plan (stabilità)
 Non imponiamo numeri esatti di score per ogni caso (la taratura può cambiare).
-Imponiamo invece vincoli **stabili e difendibili**, ad esempio:
+Imponiamo vincoli **stabili e difendibili**, ad esempio:
 - “score deve risultare basso / non alto”
 - “non deve essere ‘Molto forte’”
 - “deve essere penalizzata per sequenza/ripetizione/small-set/token personale”
 - “`validateFinal` deve fallire / deve passare”
-- “suggerimenti e livello non devono contraddirsi”
+- “livello e suggerimenti non devono contraddirsi”
 
-Se cambiate taratura/policy in `psmEngine.js`, aggiornate questo documento indicando esplicitamente:
+Se cambiate taratura/policy in `src/engine/psmEngine.js`, aggiornate questo documento indicando:
 - quali casi cambiano aspettativa
 - perché (nuova regola / nuovo dizionario / nuovo cap)
 
 ---
 
-## Come eseguire i test
+## 3) Come eseguire i test manuali
 
 ### A) Manuale via Web UI (DS1)
 Avvio corretto (serve `src/` come root):
@@ -51,15 +58,16 @@ python -m http.server 8080
 Apri: `http://localhost:8080/web/`
 
 Procedura consigliata:
-1) Compila nome/cognome/email (per i casi “con contesto”).
+1) Compila nome/cognome/email (serve per i casi “con contesto”).
 2) Inserisci la password: verifica barra/score, livello e suggerimenti (real-time).
-3) Esegui submit: verifica esito `validateFinal` (accettata/rifiutata e messaggio).
+3) Premi submit: verifica esito `validateFinal` (accettata/rifiutata e messaggio).
 
 ---
 
 ### B) Manuale via Dashboard (DS4)
 Prerequisiti:
-1) avere almeno 1 run in `src/experiments/outputs/` (es. `npm run run:sample` in `src/experiments`)
+1) avere almeno 1 run in `src/experiments/outputs/`
+   - oppure usare una run “ufficiale” scaricata da GitHub Actions e copiata in `src/experiments/outputs/`
 2) avviare l’API (`src/api`) su `http://localhost:3000`
 
 Avvio UI:
@@ -67,8 +75,7 @@ Avvio UI:
 cd src
 python -m http.server 8080
 ~~~
-Apri:
-- `http://localhost:8080/web/experiments.html`
+Apri: `http://localhost:8080/web/experiments.html`
 
 Checklist DS4:
 - la lista run mostra almeno 1 run
@@ -93,7 +100,7 @@ console.log("final:", e.validateFinal("Mario2025!", tokens));
 ~~~
 
 Suggerimento:
-- usate sempre gli stessi token per i casi “con contesto” (es. Mario/Rossi/mario.rossi@example.com) per ripetibilità.
+- usate sempre gli stessi token per i casi “con contesto” per ripetibilità.
 
 ---
 
@@ -129,7 +136,8 @@ Se `PSM_API_KEY` è impostata, aggiungere:
 
 ---
 
-## Requisiti minimi coperti da questi test
+## 4) Requisiti minimi coperti da questi test (cosa deve succedere)
+
 (a) Password troppo corta o con poche categorie:
 - `validateFinal` deve essere NO
 - non deve mai risultare “Molto forte”
@@ -154,7 +162,7 @@ Se `PSM_API_KEY` è impostata, aggiungere:
 
 ---
 
-## Batteria minima consigliata (22 casi)
+## 5) Batteria minima consigliata (22 casi)
 
 ### Casi SENZA contesto
 1) `aaaaaaaa`
@@ -189,14 +197,15 @@ Token suggeriti: `["mario","rossi","mario.rossi","example","com"]`
 
 ---
 
-## Note di regressione emerse (da non perdere)
-- In PowerShell usare `curl.exe` (evita errori su opzioni tipo `-sSf`).
+## 6) Note di regressione emerse (da non perdere)
+- In PowerShell usare `curl.exe` (evita problemi su opzioni e parsing).
 - Per experiments API, il dettaglio run espone la preview in `resultsPreview` (non in `results`): la dashboard DS4 deve leggere quella chiave.
 - Lo script esperimenti deve usare `--redact-password` (flag corretto).
+- Gli export DS5 supportano almeno: `json`, `csv`, `tsv`, `excelcsv`.
 
 ---
 
-## Criteri di chiusura (pass/fail)
+## 7) Criteri di chiusura (pass/fail)
 Il test plan è “OK” quando:
 1) tutti i casi sopra sono eseguibili in modo ripetibile (UI/Engine/API/DS4)
 2) per ogni caso è chiaro se l’aspettativa è rispettata
@@ -206,15 +215,4 @@ Il test plan è “OK” quando:
 Se un caso fallisce:
 - aprire issue con: password, contesto, output (score/level/pattern/feedback + validateFinal), e expected
 - se il fallimento è “atteso” (policy cambiata), aggiornare qui l’aspettativa con motivazione
-
-
-
-
-
-
-
-
-
-
-
 
