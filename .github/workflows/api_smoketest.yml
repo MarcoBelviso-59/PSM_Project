@@ -22,7 +22,7 @@ jobs:
         with:
           node-version: "18"
 
-      - name: Locate API & Experiments folders
+      - name: Locate API & Experiments folders (absolute paths)
         id: locate
         shell: bash
         run: |
@@ -38,21 +38,23 @@ jobs:
             find . -maxdepth 4 -type d
             exit 1
           fi
-
           if [ -z "$EXP_PKG" ]; then
             echo "ERROR: Could not find */src/experiments/package.json"
             find . -maxdepth 4 -type d
             exit 1
           fi
 
-          API_DIR="$(dirname "$API_PKG")"
-          EXP_DIR="$(dirname "$EXP_PKG")"
+          API_DIR_REL="$(dirname "$API_PKG")"
+          EXP_DIR_REL="$(dirname "$EXP_PKG")"
 
-          echo "Found API dir: $API_DIR"
-          echo "Found EXP dir: $EXP_DIR"
+          API_DIR_ABS="$(cd "$API_DIR_REL" && pwd -P)"
+          EXP_DIR_ABS="$(cd "$EXP_DIR_REL" && pwd -P)"
 
-          echo "api_dir=$API_DIR" >> $GITHUB_OUTPUT
-          echo "exp_dir=$EXP_DIR" >> $GITHUB_OUTPUT
+          echo "Found API dir (abs): $API_DIR_ABS"
+          echo "Found EXP dir (abs): $EXP_DIR_ABS"
+
+          echo "api_dir=$API_DIR_ABS" >> $GITHUB_OUTPUT
+          echo "exp_dir=$EXP_DIR_ABS" >> $GITHUB_OUTPUT
 
       # --- Prepare a smoke run in outputs/ ---
       - name: Install dependencies (experiments)
@@ -65,7 +67,9 @@ jobs:
 
       - name: Run experiment (smoke)
         working-directory: ${{ steps.locate.outputs.exp_dir }}
+        shell: bash
         run: |
+          set -e
           rm -rf outputs/run_smoke_ci || true
           node run.js --in datasets/dataset_v1.json --out outputs/run_smoke_ci --redact-password --seed 12345
           echo "== outputs listing =="
@@ -73,7 +77,7 @@ jobs:
           echo "== run_smoke_ci listing =="
           ls -la outputs/run_smoke_ci || true
 
-      # --- Start API pointing to experiments outputs ---
+      # --- Start API pointing to experiments outputs (ABSOLUTE) ---
       - name: Install dependencies (api)
         working-directory: ${{ steps.locate.outputs.api_dir }}
         run: npm install
@@ -83,7 +87,11 @@ jobs:
         env:
           PORT: "3000"
           PSM_EXPERIMENTS_DIR: ${{ steps.locate.outputs.exp_dir }}/outputs
+        shell: bash
         run: |
+          set -e
+          echo "PSM_EXPERIMENTS_DIR=$PSM_EXPERIMENTS_DIR"
+          ls -la "$PSM_EXPERIMENTS_DIR" || true
           nohup node server.js > api.log 2>&1 &
           echo $! > api.pid
 
