@@ -1,0 +1,802 @@
+[
+  {
+    "id": "1",
+    "category": "random_strong",
+    "password": "$OD+81v_2NhM,$?zg_;%(%",
+    "personalTokens": []
+  },
+  {
+    "id": "2",
+    "category": "random_strong",
+    "password": "ZIuH08,yvCo?vncv-EMX**",
+    "personalTokens": []
+  },
+  {
+    "id": "3",
+    "category": "random_strong",
+    "password": "UEl$9K3Rb!QcXgmu49",
+    "personalTokens": []
+  },
+  {
+    "id": "4",
+    "category": "random_strong",
+    "password": "S#}#l:;y+@zO0h1}",
+    "personalTokens": []
+  },
+  {
+    "id": "5",
+    "category": "random_strong",
+    "password": "zE=-VVZlNn2@+AN8cqeZL",
+    "personalTokens": []
+  },
+  {
+    "id": "6",
+    "category": "random_strong",
+    "password": "&O3#D.Z2n!Dvq(ib",
+    "personalTokens": []
+  },
+  {
+    "id": "7",
+    "category": "random_strong",
+    "password": "Q^zSS{L0Jx_7SbbKbr(D",
+    "personalTokens": []
+  },
+  {
+    "id": "8",
+    "category": "random_strong",
+    "password": "TohVR*CS65&T(m4]jAf",
+    "personalTokens": []
+  },
+  {
+    "id": "9",
+    "category": "random_strong",
+    "password": "!?=6{00gLHgEo]c74$xY7",
+    "personalTokens": []
+  },
+  {
+    "id": "10",
+    "category": "random_strong",
+    "password": "N%0na#L360nPqa83$U",
+    "personalTokens": []
+  },
+  {
+    "id": "11",
+    "category": "random_strong",
+    "password": "&Epll5n]]8UnI8jez3y}=",
+    "personalTokens": []
+  },
+  {
+    "id": "12",
+    "category": "random_strong",
+    "password": "%Lg6]8}BhsH6sT9wTmfSn9",
+    "personalTokens": []
+  },
+  {
+    "id": "13",
+    "category": "random_strong",
+    "password": ":Y-p,^G3alcCku2xz",
+    "personalTokens": []
+  },
+  {
+    "id": "14",
+    "category": "random_strong",
+    "password": "3S;-?%XB.*gp++lb",
+    "personalTokens": []
+  },
+  {
+    "id": "15",
+    "category": "random_strong",
+    "password": "UF^=wsbn9@L9%IE1M0",
+    "personalTokens": []
+  },
+  {
+    "id": "16",
+    "category": "random_strong",
+    "password": "w(,$A0Hz}sTj+$0vWW4",
+    "personalTokens": []
+  },
+  {
+    "id": "17",
+    "category": "random_strong",
+    "password": ":^TGA2Go_GFD8Ht()fp8",
+    "personalTokens": []
+  },
+  {
+    "id": "18",
+    "category": "random_strong",
+    "password": "29D:ltp3Se4;%1a^",
+    "personalTokens": []
+  },
+  {
+    "id": "19",
+    "category": "random_strong",
+    "password": ".I0?ANWn1{C%}qAGa]",
+    "personalTokens": []
+  },
+  {
+    "id": "20",
+    "category": "random_strong",
+    "password": "t}SVsG650.-mAC0s8$",
+    "personalTokens": []
+  },
+  {
+    "id": "21",
+    "category": "short_weak",
+    "password": "mario85",
+    "personalTokens": []
+  },
+  {
+    "id": "22",
+    "category": "short_weak",
+    "password": "roma86",
+    "personalTokens": []
+  },
+  {
+    "id": "23",
+    "category": "short_weak",
+    "password": "amore39",
+    "personalTokens": []
+  },
+  {
+    "id": "24",
+    "category": "short_weak",
+    "password": "pizza88",
+    "personalTokens": []
+  },
+  {
+    "id": "25",
+    "category": "short_weak",
+    "password": "hello50",
+    "personalTokens": []
+  },
+  {
+    "id": "26",
+    "category": "short_weak",
+    "password": "sole44",
+    "personalTokens": []
+  },
+  {
+    "id": "27",
+    "category": "short_weak",
+    "password": "roma81",
+    "personalTokens": []
+  },
+  {
+    "id": "28",
+    "category": "short_weak",
+    "password": "pizza20",
+    "personalTokens": []
+  },
+  {
+    "id": "29",
+    "category": "short_weak",
+    "password": "hello52",
+    "personalTokens": []
+  },
+  {
+    "id": "30",
+    "category": "short_weak",
+    "password": "ciao50",
+    "personalTokens": []
+  },
+  {
+    "id": "31",
+    "category": "short_weak",
+    "password": "pizza8",
+    "personalTokens": []
+  },
+  {
+    "id": "32",
+    "category": "short_weak",
+    "password": "sole84",
+    "personalTokens": []
+  },
+  {
+    "id": "33",
+    "category": "short_weak",
+    "password": "sole85",
+    "personalTokens": []
+  },
+  {
+    "id": "34",
+    "category": "short_weak",
+    "password": "roma74",
+    "personalTokens": []
+  },
+  {
+    "id": "35",
+    "category": "short_weak",
+    "password": "mario37",
+    "personalTokens": []
+  },
+  {
+    "id": "36",
+    "category": "short_weak",
+    "password": "admin35",
+    "personalTokens": []
+  },
+  {
+    "id": "37",
+    "category": "short_weak",
+    "password": "mario77",
+    "personalTokens": []
+  },
+  {
+    "id": "38",
+    "category": "short_weak",
+    "password": "mario77",
+    "personalTokens": []
+  },
+  {
+    "id": "39",
+    "category": "short_weak",
+    "password": "admin37",
+    "personalTokens": []
+  },
+  {
+    "id": "40",
+    "category": "short_weak",
+    "password": "sole54",
+    "personalTokens": []
+  },
+  {
+    "id": "41",
+    "category": "patterns",
+    "password": "abcd1234",
+    "personalTokens": []
+  },
+  {
+    "id": "42",
+    "category": "patterns",
+    "password": "aaaa1111",
+    "personalTokens": []
+  },
+  {
+    "id": "43",
+    "category": "patterns",
+    "password": "abcd1234",
+    "personalTokens": []
+  },
+  {
+    "id": "44",
+    "category": "patterns",
+    "password": "abcd1234",
+    "personalTokens": []
+  },
+  {
+    "id": "45",
+    "category": "patterns",
+    "password": "passpass12",
+    "personalTokens": []
+  },
+  {
+    "id": "46",
+    "category": "patterns",
+    "password": "abababab12",
+    "personalTokens": []
+  },
+  {
+    "id": "47",
+    "category": "patterns",
+    "password": "qwerty123",
+    "personalTokens": []
+  },
+  {
+    "id": "48",
+    "category": "patterns",
+    "password": "qwerty123",
+    "personalTokens": []
+  },
+  {
+    "id": "49",
+    "category": "patterns",
+    "password": "aaaa1111",
+    "personalTokens": []
+  },
+  {
+    "id": "50",
+    "category": "patterns",
+    "password": "qwerty123",
+    "personalTokens": []
+  },
+  {
+    "id": "51",
+    "category": "patterns",
+    "password": "zzzz9999",
+    "personalTokens": []
+  },
+  {
+    "id": "52",
+    "category": "patterns",
+    "password": "asdfgh12",
+    "personalTokens": []
+  },
+  {
+    "id": "53",
+    "category": "patterns",
+    "password": "aaaa1111",
+    "personalTokens": []
+  },
+  {
+    "id": "54",
+    "category": "patterns",
+    "password": "asdfgh12",
+    "personalTokens": []
+  },
+  {
+    "id": "55",
+    "category": "patterns",
+    "password": "abcd1234",
+    "personalTokens": []
+  },
+  {
+    "id": "56",
+    "category": "patterns",
+    "password": "qwerty123",
+    "personalTokens": []
+  },
+  {
+    "id": "57",
+    "category": "patterns",
+    "password": "abababab12",
+    "personalTokens": []
+  },
+  {
+    "id": "58",
+    "category": "patterns",
+    "password": "abcd1234",
+    "personalTokens": []
+  },
+  {
+    "id": "59",
+    "category": "patterns",
+    "password": "qwerty123",
+    "personalTokens": []
+  },
+  {
+    "id": "60",
+    "category": "patterns",
+    "password": "zzzz9999",
+    "personalTokens": []
+  },
+  {
+    "id": "61",
+    "category": "dictionary_decorated",
+    "password": "computer?1990",
+    "personalTokens": []
+  },
+  {
+    "id": "62",
+    "category": "dictionary_decorated",
+    "password": "milano@2022",
+    "personalTokens": []
+  },
+  {
+    "id": "63",
+    "category": "dictionary_decorated",
+    "password": "milano$1999",
+    "personalTokens": []
+  },
+  {
+    "id": "64",
+    "category": "dictionary_decorated",
+    "password": "elefante!1995",
+    "personalTokens": []
+  },
+  {
+    "id": "65",
+    "category": "dictionary_decorated",
+    "password": "milano!1990",
+    "personalTokens": []
+  },
+  {
+    "id": "66",
+    "category": "dictionary_decorated",
+    "password": "cavallo#2020",
+    "personalTokens": []
+  },
+  {
+    "id": "67",
+    "category": "dictionary_decorated",
+    "password": "elefante$2020",
+    "personalTokens": []
+  },
+  {
+    "id": "68",
+    "category": "dictionary_decorated",
+    "password": "computer!2009",
+    "personalTokens": []
+  },
+  {
+    "id": "69",
+    "category": "dictionary_decorated",
+    "password": "sicurezza?2010",
+    "personalTokens": []
+  },
+  {
+    "id": "70",
+    "category": "dictionary_decorated",
+    "password": "milano#2022",
+    "personalTokens": []
+  },
+  {
+    "id": "71",
+    "category": "dictionary_decorated",
+    "password": "password@2011",
+    "personalTokens": []
+  },
+  {
+    "id": "72",
+    "category": "dictionary_decorated",
+    "password": "password!2009",
+    "personalTokens": []
+  },
+  {
+    "id": "73",
+    "category": "dictionary_decorated",
+    "password": "universita#2007",
+    "personalTokens": []
+  },
+  {
+    "id": "74",
+    "category": "dictionary_decorated",
+    "password": "universita!2023",
+    "personalTokens": []
+  },
+  {
+    "id": "75",
+    "category": "dictionary_decorated",
+    "password": "universita?1991",
+    "personalTokens": []
+  },
+  {
+    "id": "76",
+    "category": "dictionary_decorated",
+    "password": "computer$2009",
+    "personalTokens": []
+  },
+  {
+    "id": "77",
+    "category": "dictionary_decorated",
+    "password": "napoli?2025",
+    "personalTokens": []
+  },
+  {
+    "id": "78",
+    "category": "dictionary_decorated",
+    "password": "universita?2003",
+    "personalTokens": []
+  },
+  {
+    "id": "79",
+    "category": "dictionary_decorated",
+    "password": "password!1991",
+    "personalTokens": []
+  },
+  {
+    "id": "80",
+    "category": "dictionary_decorated",
+    "password": "cavallo?2015",
+    "personalTokens": []
+  },
+  {
+    "id": "81",
+    "category": "pop_culture",
+    "password": "starwars2025",
+    "personalTokens": []
+  },
+  {
+    "id": "82",
+    "category": "pop_culture",
+    "password": "batman2001",
+    "personalTokens": []
+  },
+  {
+    "id": "83",
+    "category": "pop_culture",
+    "password": "goku2022",
+    "personalTokens": []
+  },
+  {
+    "id": "84",
+    "category": "pop_culture",
+    "password": "naruto2017",
+    "personalTokens": []
+  },
+  {
+    "id": "85",
+    "category": "pop_culture",
+    "password": "pika2012",
+    "personalTokens": []
+  },
+  {
+    "id": "86",
+    "category": "pop_culture",
+    "password": "batman2003",
+    "personalTokens": []
+  },
+  {
+    "id": "87",
+    "category": "pop_culture",
+    "password": "pika2009",
+    "personalTokens": []
+  },
+  {
+    "id": "88",
+    "category": "pop_culture",
+    "password": "batman2008",
+    "personalTokens": []
+  },
+  {
+    "id": "89",
+    "category": "pop_culture",
+    "password": "spiderman2002",
+    "personalTokens": []
+  },
+  {
+    "id": "90",
+    "category": "pop_culture",
+    "password": "naruto1999",
+    "personalTokens": []
+  },
+  {
+    "id": "91",
+    "category": "pop_culture",
+    "password": "harrypotter1998",
+    "personalTokens": []
+  },
+  {
+    "id": "92",
+    "category": "pop_culture",
+    "password": "goku2015",
+    "personalTokens": []
+  },
+  {
+    "id": "93",
+    "category": "pop_culture",
+    "password": "pika1999",
+    "personalTokens": []
+  },
+  {
+    "id": "94",
+    "category": "pop_culture",
+    "password": "starwars2018",
+    "personalTokens": []
+  },
+  {
+    "id": "95",
+    "category": "pop_culture",
+    "password": "onepiece1997",
+    "personalTokens": []
+  },
+  {
+    "id": "96",
+    "category": "pop_culture",
+    "password": "pika1999",
+    "personalTokens": []
+  },
+  {
+    "id": "97",
+    "category": "pop_culture",
+    "password": "harrypotter1998",
+    "personalTokens": []
+  },
+  {
+    "id": "98",
+    "category": "pop_culture",
+    "password": "harrypotter2023",
+    "personalTokens": []
+  },
+  {
+    "id": "99",
+    "category": "pop_culture",
+    "password": "goku2004",
+    "personalTokens": []
+  },
+  {
+    "id": "100",
+    "category": "pop_culture",
+    "password": "goku2014",
+    "personalTokens": []
+  },
+  {
+    "id": "101",
+    "category": "personal_tokens",
+    "password": "luca1993roma",
+    "personalTokens": [
+      "luca",
+      "roma",
+      "1993"
+    ]
+  },
+  {
+    "id": "102",
+    "category": "personal_tokens",
+    "password": "mario2000milano",
+    "personalTokens": [
+      "mario",
+      "milano",
+      "2000"
+    ]
+  },
+  {
+    "id": "103",
+    "category": "personal_tokens",
+    "password": "mario1998torino",
+    "personalTokens": [
+      "mario",
+      "torino",
+      "1998"
+    ]
+  },
+  {
+    "id": "104",
+    "category": "personal_tokens",
+    "password": "francesco1981milano",
+    "personalTokens": [
+      "francesco",
+      "milano",
+      "1981"
+    ]
+  },
+  {
+    "id": "105",
+    "category": "personal_tokens",
+    "password": "mario1998roma",
+    "personalTokens": [
+      "mario",
+      "roma",
+      "1998"
+    ]
+  },
+  {
+    "id": "106",
+    "category": "personal_tokens",
+    "password": "mario1999milano",
+    "personalTokens": [
+      "mario",
+      "milano",
+      "1999"
+    ]
+  },
+  {
+    "id": "107",
+    "category": "personal_tokens",
+    "password": "francesco1983bari",
+    "personalTokens": [
+      "francesco",
+      "bari",
+      "1983"
+    ]
+  },
+  {
+    "id": "108",
+    "category": "personal_tokens",
+    "password": "mario1983milano",
+    "personalTokens": [
+      "mario",
+      "milano",
+      "1983"
+    ]
+  },
+  {
+    "id": "109",
+    "category": "personal_tokens",
+    "password": "giulia1983napoli",
+    "personalTokens": [
+      "giulia",
+      "napoli",
+      "1983"
+    ]
+  },
+  {
+    "id": "110",
+    "category": "personal_tokens",
+    "password": "francesco1997napoli",
+    "personalTokens": [
+      "francesco",
+      "napoli",
+      "1997"
+    ]
+  },
+  {
+    "id": "111",
+    "category": "personal_tokens",
+    "password": "anna1995milano",
+    "personalTokens": [
+      "anna",
+      "milano",
+      "1995"
+    ]
+  },
+  {
+    "id": "112",
+    "category": "personal_tokens",
+    "password": "francesco1985torino",
+    "personalTokens": [
+      "francesco",
+      "torino",
+      "1985"
+    ]
+  },
+  {
+    "id": "113",
+    "category": "personal_tokens",
+    "password": "luca1990bari",
+    "personalTokens": [
+      "luca",
+      "bari",
+      "1990"
+    ]
+  },
+  {
+    "id": "114",
+    "category": "personal_tokens",
+    "password": "mario1988milano",
+    "personalTokens": [
+      "mario",
+      "milano",
+      "1988"
+    ]
+  },
+  {
+    "id": "115",
+    "category": "personal_tokens",
+    "password": "giulia1983milano",
+    "personalTokens": [
+      "giulia",
+      "milano",
+      "1983"
+    ]
+  },
+  {
+    "id": "116",
+    "category": "personal_tokens",
+    "password": "francesco1985roma",
+    "personalTokens": [
+      "francesco",
+      "roma",
+      "1985"
+    ]
+  },
+  {
+    "id": "117",
+    "category": "personal_tokens",
+    "password": "francesco2005milano",
+    "personalTokens": [
+      "francesco",
+      "milano",
+      "2005"
+    ]
+  },
+  {
+    "id": "118",
+    "category": "personal_tokens",
+    "password": "luca1982milano",
+    "personalTokens": [
+      "luca",
+      "milano",
+      "1982"
+    ]
+  },
+  {
+    "id": "119",
+    "category": "personal_tokens",
+    "password": "francesco1989roma",
+    "personalTokens": [
+      "francesco",
+      "roma",
+      "1989"
+    ]
+  },
+  {
+    "id": "120",
+    "category": "personal_tokens",
+    "password": "francesco1995bari",
+    "personalTokens": [
+      "francesco",
+      "bari",
+      "1995"
+    ]
+  }
+]
