@@ -24,19 +24,31 @@ jobs:
         shell: bash
         run: |
           set -e
-          API_DIR="$(find . -type f -path "*/src/api/package.json" -print -quit | xargs -n1 dirname)"
-          if [ -z "$API_DIR" ]; then
-            echo "Could not find src/api/package.json"
-            echo "Repo tree (top 3 levels):"
-            find . -maxdepth 3 -type d
+          echo "== Repo root =="
+          pwd
+          echo "== List top-level =="
+          ls -la
+
+          API_PKG="$(find . -type f -path "*/src/api/package.json" -print -quit || true)"
+          echo "API_PKG=$API_PKG"
+
+          if [ -z "$API_PKG" ]; then
+            echo "ERROR: Could not find */src/api/package.json"
+            echo "== Tree (max depth 4) =="
+            find . -maxdepth 4 -type d
             exit 1
           fi
+
+          API_DIR="$(dirname "$API_PKG")"
           echo "Found API dir: $API_DIR"
+          echo "== List API dir =="
+          ls -la "$API_DIR"
+
           echo "api_dir=$API_DIR" >> $GITHUB_OUTPUT
 
       - name: Install deps (API)
         working-directory: ${{ steps.locate.outputs.api_dir }}
-        run: npm ci
+        run: npm install
 
       - name: Run tests (API)
         working-directory: ${{ steps.locate.outputs.api_dir }}
