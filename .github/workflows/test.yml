@@ -1,0 +1,30 @@
+name: CI - Tests
+
+on:
+  push:
+    branches: ["main"]
+  pull_request:
+    branches: ["main"]
+
+jobs:
+  api-tests:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "18"
+          cache: "npm"
+          cache-dependency-path: src/api/package-lock.json
+
+      - name: Install deps (src/api)
+        working-directory: src/api
+        run: npm ci
+
+      - name: Run tests (src/api)
+        working-directory: src/api
+        run: npm test
