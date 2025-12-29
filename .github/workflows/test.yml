@@ -19,11 +19,25 @@ jobs:
         with:
           node-version: "18"
 
+      - name: Locate API folder
+        id: locate
+        shell: bash
+        run: |
+          set -e
+          API_DIR="$(find . -type f -path "*/src/api/package.json" -print -quit | xargs -n1 dirname)"
+          if [ -z "$API_DIR" ]; then
+            echo "Could not find src/api/package.json"
+            echo "Repo tree (top 3 levels):"
+            find . -maxdepth 3 -type d
+            exit 1
+          fi
+          echo "Found API dir: $API_DIR"
+          echo "api_dir=$API_DIR" >> $GITHUB_OUTPUT
+
       - name: Install deps (API)
-        working-directory: PSM_Project/src/api
+        working-directory: ${{ steps.locate.outputs.api_dir }}
         run: npm ci
 
       - name: Run tests (API)
-        working-directory: PSM_Project/src/api
+        working-directory: ${{ steps.locate.outputs.api_dir }}
         run: npm test
-
