@@ -4,9 +4,9 @@ on:
   workflow_dispatch:
   push:
     paths:
-      - "src/api/**"
-      - "src/experiments/**"
-      - "src/engine/**"
+      - "**/src/api/**"
+      - "**/src/experiments/**"
+      - "**/src/engine/**"
       - ".github/workflows/api_smoketest.yml"
 
 jobs:
@@ -20,32 +20,82 @@ jobs:
       - name: Setup Node
         uses: actions/setup-node@v4
         with:
-          node-version: "20"
+          node-version: "18"
+
+      - name: Locate API & Experiments folders
+        id: locate
+        shell: bash
+        run: |
+          set -e
+
+          API_PKG="$(find . -type f -path "*/src/api/package.json" -print -quit || true)"
+          EXP_PKG="$(find . -type f -path "*/src/experiments/package.json" -print -quit || true)"
+
+          echo "API_PKG=$API_PKG"
+          echo "EXP_PKG=$EXP_PKG"
+
+          if [ -z "$API_PKG" ]; then
+            echo "ERROR: Could not find */src/api/package.json"
+            find . -maxdepth 4 -type d
+            exit 1
+          fi
+
+          if [ -z "$EXP_PKG" ]; then
+            echo "ERROR: Could not find */src/experiments/package.json"
+            find . -maxdepth 4 -type d
+            exit 1
+          fi
+
+          API_DIR="$(dirname "$API_PKG")"
+          EXP_DIR="$(dirname "$EXP_PKG")"
+
+          echo "Found API dir: $API_DIR"
+          echo "Found EXP dir: $EXP_DIR"
+
+          echo "api_dir=$API_DIR" >> $GITHUB_OUTPUT
+          echo "exp_dir=$EXP_DIR" >> $GITHUB_OUTPUT
 
       # 1) Prepara un run in outputs/ (così l'API lo trova)
       - name: Install dependencies (experiments)
-        working-directory: src/experiments
-        run: npm install
+        working-directory: ${{ steps.locate.outputs.exp_dir }}
+        run: |
+          if [ -f package-lock.json ]; then npm ci; else npm install; fi
 
-      - name: Generate dataset (v1)
-        working-directory: src/experiments
-        run: node tools/generate_dataset.js datasets/dataset_v1.json 5
+      - name: Generate dataset (v1 - tiny smoke)
+        working-directory: ${{ steps.locate.outputs.exp_dir }}
+        run: node tools/generate_dataset.js datasets/dataset_v1.json 5 --seed 12345
 
       - name: Run experiment (smoke)
-        working-directory: src/experiments
-        run: node run.js --in datasets/dataset_v1.json --out outputs/run_smoke_ci --redact-password
+        working-directory: ${{ steps.locate.outputs.exp_dir }}
+        run: node run.js --in datasets/dataset_v1.json --out outputs/run_smoke_ci --redact-password --seed 12345
 
-      # 2) Avvia API
+      # 2) Avvia API (puntando esplicitamente alla cartella outputs appena creata)
       - name: Install dependencies (api)
-        working-directory: src/api
+        working-directory: ${{ steps.locate.outputs.api_dir }}
         run: npm install
 
       - name: Start API (background)
-        working-directory: src/api
+        working-directory: ${{ steps.locate.outputs.api_dir }}
+        env:
+          PORT: "3000"
+          PSM_EXPERIMENTS_DIR: ${{ steps.locate.outputs.exp_dir }}/outputs
         run: |
           nohup node server.js > api.log 2>&1 &
           echo $! > api.pid
-          sleep 2
+
+      - name: Wait for API to be ready
+        shell: bash
+        run: |
+          set -e
+          for i in {1..30}; do
+            if curl -sSf http://localhost:3000/health >/dev/null; then
+              echo "API is ready"
+              exit 0
+            fi
+            sleep 1
+          done
+          echo "API did not become ready in time"
+          exit 1
 
       # 3) Smoketest chiamate HTTP
       - name: Test /experiments (list)
@@ -64,10 +114,10 @@ jobs:
           curl -sSf "http://localhost:3000/experiments/run_smoke_ci/export?format=excelcsv" -o out.csv
           test -s out.csv
 
-      # 4) (opzionale) stop server per pulizia
+      # 4) Stop server per pulizia + log utile
       - name: Stop API
         if: always()
-        working-directory: src/api
+        working-directory: ${{ steps.locate.outputs.api_dir }}
         run: |
           if [ -f api.pid ]; then kill $(cat api.pid) || true; fi
           tail -n 200 api.log || true
