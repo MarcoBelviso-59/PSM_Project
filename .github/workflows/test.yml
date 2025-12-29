@@ -19,12 +19,14 @@ jobs:
         with:
           node-version: "18"
           cache: "npm"
-          cache-dependency-path: src/api/package-lock.json
+          cache-dependency-path: PSM_Project/src/api/package-lock.json
 
-      - name: Install deps (src/api)
-        working-directory: src/api
+      - name: Install deps (API)
+        working-directory: PSM_Project/src/api
         run: npm ci
 
-      - name: Run tests (src/api)
-        working-directory: src/api
+      - name: Run tests (API)
+        working-directory: PSM_Project/src/api
         run: npm test
+
+          
