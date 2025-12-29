@@ -18,8 +18,6 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: "18"
-          cache: "npm"
-          cache-dependency-path: PSM_Project/src/api/package-lock.json
 
       - name: Install deps (API)
         working-directory: PSM_Project/src/api
@@ -29,4 +27,3 @@ jobs:
         working-directory: PSM_Project/src/api
         run: npm test
 
-          
