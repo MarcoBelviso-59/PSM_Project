@@ -1,0 +1,155 @@
+{
+  "dataset": "datasets/dataset_v1.json",
+  "datasetSeed": 12345,
+  "out": "outputs/run_dataset_v1_ci",
+  "records": 120,
+  "aggregates": {
+    "psm_mean": 38.53,
+    "zxcvbn_mean": 52.08,
+    "delta_mean": -13.55
+  },
+  "byCategory": [
+    {
+      "category": "random_strong",
+      "n": 20,
+      "valid_rate": 0.95,
+      "psm_mean": 96.95,
+      "psm_median": 100,
+      "zxcvbn_mean": 100,
+      "zxcvbn_median": 100,
+      "delta_mean": -3.05
+    },
+    {
+      "category": "short_weak",
+      "n": 20,
+      "valid_rate": 0,
+      "psm_mean": 5,
+      "psm_median": 6,
+      "zxcvbn_mean": 25,
+      "zxcvbn_median": 25,
+      "delta_mean": -20
+    },
+    {
+      "category": "patterns",
+      "n": 20,
+      "valid_rate": 0,
+      "psm_mean": 13.8,
+      "psm_median": 15,
+      "zxcvbn_mean": 12.5,
+      "zxcvbn_median": 12.5,
+      "delta_mean": 1.3
+    },
+    {
+      "category": "dictionary_decorated",
+      "n": 20,
+      "valid_rate": 0,
+      "psm_mean": 44.8,
+      "psm_median": 49,
+      "zxcvbn_mean": 67.5,
+      "zxcvbn_median": 75,
+      "delta_mean": -22.7
+    },
+    {
+      "category": "pop_culture",
+      "n": 20,
+      "valid_rate": 0,
+      "psm_mean": 33.4,
+      "psm_median": 35,
+      "zxcvbn_mean": 32.5,
+      "zxcvbn_median": 25,
+      "delta_mean": 0.9
+    },
+    {
+      "category": "personal_tokens",
+      "n": 20,
+      "valid_rate": 0,
+      "psm_mean": 37.25,
+      "psm_median": 39,
+      "zxcvbn_mean": 75,
+      "zxcvbn_median": 75,
+      "delta_mean": -37.75
+    }
+  ],
+  "topAbsDisagree": [
+    {
+      "id": "3",
+      "category": "random_strong",
+      "psm_score": 39,
+      "zxcvbn_score_0_100": 100,
+      "delta": -61,
+      "patterns": "WORDY_PASSPHRASE"
+    },
+    {
+      "id": "101",
+      "category": "personal_tokens",
+      "psm_score": 25,
+      "zxcvbn_score_0_100": 75,
+      "delta": -50,
+      "patterns": "MISSING_UPPER|MISSING_SYMBOL|YEAR_OR_DATE|REPEAT_2|WORDY_PASSPHRASE|PERSONAL_INFO"
+    },
+    {
+      "id": "113",
+      "category": "personal_tokens",
+      "psm_score": 25,
+      "zxcvbn_score_0_100": 75,
+      "delta": -50,
+      "patterns": "MISSING_UPPER|MISSING_SYMBOL|YEAR_OR_DATE|REPEAT_2|WORDY_PASSPHRASE|PERSONAL_INFO"
+    },
+    {
+      "id": "105",
+      "category": "personal_tokens",
+      "psm_score": 32,
+      "zxcvbn_score_0_100": 75,
+      "delta": -43,
+      "patterns": "MISSING_UPPER|MISSING_SYMBOL|YEAR_OR_DATE|REPEAT_2|WORDY_PASSPHRASE|PERSONAL_INFO"
+    },
+    {
+      "id": "69",
+      "category": "dictionary_decorated",
+      "psm_score": 59,
+      "zxcvbn_score_0_100": 100,
+      "delta": -41,
+      "patterns": "MISSING_UPPER|YEAR_OR_DATE|REPEAT_2"
+    },
+    {
+      "id": "102",
+      "category": "personal_tokens",
+      "psm_score": 39,
+      "zxcvbn_score_0_100": 75,
+      "delta": -36,
+      "patterns": "MISSING_UPPER|MISSING_SYMBOL|YEAR_OR_DATE|REPEAT_3PLUS|WORDY_PASSPHRASE|PERSONAL_INFO"
+    },
+    {
+      "id": "103",
+      "category": "personal_tokens",
+      "psm_score": 39,
+      "zxcvbn_score_0_100": 75,
+      "delta": -36,
+      "patterns": "MISSING_UPPER|MISSING_SYMBOL|YEAR_OR_DATE|REPEAT_2|WORDY_PASSPHRASE|PERSONAL_INFO"
+    },
+    {
+      "id": "104",
+      "category": "personal_tokens",
+      "psm_score": 39,
+      "zxcvbn_score_0_100": 75,
+      "delta": -36,
+      "patterns": "MISSING_UPPER|MISSING_SYMBOL|YEAR_OR_DATE|WORDY_PASSPHRASE|PERSONAL_INFO"
+    },
+    {
+      "id": "106",
+      "category": "personal_tokens",
+      "psm_score": 39,
+      "zxcvbn_score_0_100": 75,
+      "delta": -36,
+      "patterns": "MISSING_UPPER|MISSING_SYMBOL|YEAR_OR_DATE|REPEAT_3PLUS|WORDY_PASSPHRASE|PERSONAL_INFO"
+    },
+    {
+      "id": "107",
+      "category": "personal_tokens",
+      "psm_score": 39,
+      "zxcvbn_score_0_100": 75,
+      "delta": -36,
+      "patterns": "MISSING_UPPER|MISSING_SYMBOL|YEAR_OR_DATE|WORDY_PASSPHRASE|PERSONAL_INFO"
+    }
+  ]
+}
