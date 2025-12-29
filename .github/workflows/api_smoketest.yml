@@ -27,7 +27,6 @@ jobs:
         shell: bash
         run: |
           set -e
-
           API_PKG="$(find . -type f -path "*/src/api/package.json" -print -quit || true)"
           EXP_PKG="$(find . -type f -path "*/src/experiments/package.json" -print -quit || true)"
 
@@ -55,11 +54,10 @@ jobs:
           echo "api_dir=$API_DIR" >> $GITHUB_OUTPUT
           echo "exp_dir=$EXP_DIR" >> $GITHUB_OUTPUT
 
-      # 1) Prepara un run in outputs/ (così l'API lo trova)
+      # --- Prepare a smoke run in outputs/ ---
       - name: Install dependencies (experiments)
         working-directory: ${{ steps.locate.outputs.exp_dir }}
-        run: |
-          if [ -f package-lock.json ]; then npm ci; else npm install; fi
+        run: npm install
 
       - name: Generate dataset (v1 - tiny smoke)
         working-directory: ${{ steps.locate.outputs.exp_dir }}
@@ -67,9 +65,15 @@ jobs:
 
       - name: Run experiment (smoke)
         working-directory: ${{ steps.locate.outputs.exp_dir }}
-        run: node run.js --in datasets/dataset_v1.json --out outputs/run_smoke_ci --redact-password --seed 12345
+        run: |
+          rm -rf outputs/run_smoke_ci || true
+          node run.js --in datasets/dataset_v1.json --out outputs/run_smoke_ci --redact-password --seed 12345
+          echo "== outputs listing =="
+          ls -la outputs || true
+          echo "== run_smoke_ci listing =="
+          ls -la outputs/run_smoke_ci || true
 
-      # 2) Avvia API (puntando esplicitamente alla cartella outputs appena creata)
+      # --- Start API pointing to experiments outputs ---
       - name: Install dependencies (api)
         working-directory: ${{ steps.locate.outputs.api_dir }}
         run: npm install
@@ -97,27 +101,46 @@ jobs:
           echo "API did not become ready in time"
           exit 1
 
-      # 3) Smoketest chiamate HTTP
-      - name: Test /experiments (list)
-        run: curl -sSf http://localhost:3000/experiments
+      # --- Smoke test endpoints ---
+      - name: Test /experiments (list) + capture runId
+        id: capture
+        shell: bash
+        run: |
+          set -e
+          curl -sSf http://localhost:3000/experiments -o runs.json
+          echo "== /experiments response =="
+          cat runs.json
+          RUN_ID="$(node -e "const x=require('./runs.json'); console.log((x.runs && x.runs[0]) || '')")"
+          if [ -z "$RUN_ID" ]; then
+            echo "ERROR: No runs returned by /experiments"
+            exit 1
+          fi
+          echo "Using RUN_ID=$RUN_ID"
+          echo "run_id=$RUN_ID" >> $GITHUB_OUTPUT
 
       - name: Test /experiments/:runId (detail)
-        run: curl -sSf "http://localhost:3000/experiments/run_smoke_ci?limit=2"
+        run: curl -sSf "http://localhost:3000/experiments/${{ steps.capture.outputs.run_id }}?limit=2"
 
       - name: Test export TSV
+        shell: bash
         run: |
-          curl -sSf "http://localhost:3000/experiments/run_smoke_ci/export?format=tsv" -o out.tsv
+          set -e
+          curl -sSf "http://localhost:3000/experiments/${{ steps.capture.outputs.run_id }}/export?format=tsv" -o out.tsv
           test -s out.tsv
 
       - name: Test export excelcsv
+        shell: bash
         run: |
-          curl -sSf "http://localhost:3000/experiments/run_smoke_ci/export?format=excelcsv" -o out.csv
+          set -e
+          curl -sSf "http://localhost:3000/experiments/${{ steps.capture.outputs.run_id }}/export?format=excelcsv" -o out.csv
           test -s out.csv
 
-      # 4) Stop server per pulizia + log utile
-      - name: Stop API
+      # --- Cleanup & logs ---
+      - name: Stop API and print logs
         if: always()
         working-directory: ${{ steps.locate.outputs.api_dir }}
+        shell: bash
         run: |
           if [ -f api.pid ]; then kill $(cat api.pid) || true; fi
+          echo "== api.log (last 200 lines) =="
           tail -n 200 api.log || true
