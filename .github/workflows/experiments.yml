@@ -8,8 +8,8 @@ on:
         required: false
   push:
     paths:
-      - "src/experiments/**"
-      - "src/engine/**"
+      - "**/src/experiments/**"
+      - "**/src/engine/**"
       - ".github/workflows/experiments.yml"
 
 jobs:
@@ -23,27 +23,52 @@ jobs:
       - name: Setup Node
         uses: actions/setup-node@v4
         with:
-          node-version: "20"
+          node-version: "18"
+
+      - name: Locate Experiments folder
+        id: locate
+        shell: bash
+        run: |
+          set -e
+          EXP_PKG="$(find . -type f -path "*/src/experiments/package.json" -print -quit || true)"
+          echo "EXP_PKG=$EXP_PKG"
+          if [ -z "$EXP_PKG" ]; then
+            echo "ERROR: Could not find */src/experiments/package.json"
+            find . -maxdepth 4 -type d
+            exit 1
+          fi
+          EXP_DIR="$(dirname "$EXP_PKG")"
+          echo "Found EXP dir: $EXP_DIR"
+          echo "exp_dir=$EXP_DIR" >> $GITHUB_OUTPUT
 
       - name: Set dataset seed
-        run: echo "DATASET_SEED=${{ github.event.inputs.seed || github.run_id }}" >> $GITHUB_ENV
+        shell: bash
+        run: |
+          SEED_INPUT="${{ github.event.inputs.seed }}"
+          if [ -n "$SEED_INPUT" ]; then
+            echo "DATASET_SEED=$SEED_INPUT" >> $GITHUB_ENV
+          else
+            echo "DATASET_SEED=${{ github.run_id }}" >> $GITHUB_ENV
+          fi
+          echo "Using DATASET_SEED=$DATASET_SEED"
 
       - name: Install dependencies (experiments)
-        working-directory: src/experiments
-        run: npm ci
+        working-directory: ${{ steps.locate.outputs.exp_dir }}
+        run: |
+          if [ -f package-lock.json ]; then npm ci; else npm install; fi
 
       - name: Generate dataset (v1)
-        working-directory: src/experiments
+        working-directory: ${{ steps.locate.outputs.exp_dir }}
         run: node tools/generate_dataset.js datasets/dataset_v1.json 20 --seed $DATASET_SEED
 
       - name: Run experiment (dataset_v1)
-        working-directory: src/experiments
+        working-directory: ${{ steps.locate.outputs.exp_dir }}
         run: node run.js --in datasets/dataset_v1.json --out outputs/run_dataset_v1_ci --redact-password --seed $DATASET_SEED
 
       - name: Upload results artifact
         uses: actions/upload-artifact@v4
         with:
-          name: run_dataset_v1_ci
+          name: run_dataset_v1_ci_seed_${{ env.DATASET_SEED }}
           path: |
-            src/experiments/outputs/run_dataset_v1_ci/**
-            src/experiments/datasets/dataset_v1.json
+            ${{ steps.locate.outputs.exp_dir }}/outputs/run_dataset_v1_ci/**
+            ${{ steps.locate.outputs.exp_dir }}/datasets/dataset_v1.json
