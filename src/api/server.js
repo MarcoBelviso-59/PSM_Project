@@ -6,7 +6,14 @@ const fs = require("fs");
 const path = require("path");
 
 
-const EXPERIMENTS_DIR = path.join(__dirname, "../experiments/outputs");
+const DEFAULT_EXPERIMENTS_DIR = path.join(__dirname, "../experiments/outputs");
+
+function getExperimentsDir() {
+  return process.env.PSM_EXPERIMENTS_DIR
+    ? path.resolve(process.env.PSM_EXPERIMENTS_DIR)
+    : DEFAULT_EXPERIMENTS_DIR;
+}
+
 
 
 // Import diretto dell'engine dual-mode (single source of truth)
@@ -195,6 +202,8 @@ if (!vPw.ok) {
 const PORT = process.env.PORT || 3000;
 
 app.get("/experiments", (req, res) => {
+  const EXPERIMENTS_DIR = getExperimentsDir();
+
   try {
     if (!fs.existsSync(EXPERIMENTS_DIR)) {
       return res.json({ runs: [] });
@@ -212,7 +221,8 @@ app.get("/experiments", (req, res) => {
 
 
 app.get("/experiments/:runId", (req, res) => {
-  try {
+  const EXPERIMENTS_DIR = getExperimentsDir();
+ try {
     const runId = req.params.runId;
     const runDir = path.join(EXPERIMENTS_DIR, runId);
 
@@ -243,7 +253,8 @@ app.get("/experiments/:runId", (req, res) => {
 });
 
 app.get("/experiments/:runId/export", (req, res) => {
-  try {
+  const EXPERIMENTS_DIR = getExperimentsDir();
+try {
     const runId = req.params.runId;
     const format = String(req.query.format || "").toLowerCase();
 
@@ -288,6 +299,11 @@ app.get("/experiments/:runId/export", (req, res) => {
 });
 
 
-app.listen(PORT, () => {
-  console.log(`PSM API listening on http://localhost:${PORT}`);
-});
+if (require.main === module) {
+  app.listen(PORT, () => {
+    console.log(`PSM API listening on http://localhost:${PORT}`);
+  });
+}
+
+module.exports = { app };
+
