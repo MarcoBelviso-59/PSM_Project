@@ -4,7 +4,7 @@ Questa cartella contiene la REST API del progetto:
 - **DS2**: valutazione e validazione password usando il **PSM Engine** (single source of truth)
 - **DS4/DS5 (supporto backend)**: endpoint per consultare run esperimenti salvati in `src/experiments/outputs/` ed esportarli (CSV/TSV/ExcelCSV/JSON)
 
-Aggiornato al **27/12/2025**.
+Aggiornato al **31/12/2025**.
 
 ---
 
@@ -51,23 +51,24 @@ curl.exe -s http://localhost:3000/api/evaluate ^
 ~~~
 
 Comportamento:
-- senza header → 401/403
+- senza header → 401
 - header errata → 403
-- header corretta → OK
+- header corretta → 200 OK
 
 ---
 
 ## Endpoint DS2 — Valutazione / Validazione
 
 ### POST /api/evaluate
-Valuta una password e ritorna score/level/pattern. Può includere feedback e supporta token personali.
+Valuta una password e ritorna `score`, `level`, `patterns`.  
+Su richiesta può includere `suggestions` (feedback per l’utente).
 
 Request minima:
 ~~~json
 { "password": "ExamplePassword!2026" }
 ~~~
 
-Request completa (con contesto utente):
+Request completa (con contesto utente + feedback):
 ~~~json
 {
   "password": "MarioRossi2026!",
@@ -79,15 +80,24 @@ Request completa (con contesto utente):
 Response tipica:
 ~~~json
 {
-  "ok": true,
-  "score": 69,
-  "level": "Buona",
-  "patterns": ["YEAR_OR_DATE", "PERSONAL_INFO"],
-  "feedback": {
-    "tips": ["Evita riferimenti personali", "Evita anni o date riconoscibili"]
-  }
+  "score": 59,
+  "level": "Discreta",
+  "patterns": [
+    { "type": "YEAR_OR_DATE" },
+    { "type": "REPEAT_2" },
+    { "type": "PERSONAL_INFO", "hits": 2, "matched": ["mario", "rossi"] }
+  ],
+  "suggestions": [
+    "Evita caratteri uguali consecutivi (es. AA, 11).",
+    "Evita anni o date (es. 1998, 2024, 12/05): sono tra i primi tentativi.",
+    "Evita di includere nome/cognome o parti dell’email nella password."
+  ]
 }
 ~~~
+
+Note:
+- `patterns` è un array di oggetti (almeno `{ type }`), con campi aggiuntivi opzionali per alcuni pattern.
+- `suggestions` è presente **solo** se `options.includeFeedback=true`.
 
 Alias compatibile:
 - `POST /evaluatePassword` (stesso comportamento)
@@ -99,46 +109,38 @@ Applica la policy finale: serve per decidere se la password è **accettata** per
 
 Request:
 ~~~json
-{ "password": "ExamplePassword!2026" }
+{
+  "password": "ExamplePassword!2026",
+  "user": { "firstName": "Mario", "lastName": "Rossi", "email": "mario.rossi@example.com" }
+}
 ~~~
 
 Response:
 ~~~json
-{
-  "ok": false,
-  "score": 52,
-  "level": "Debole",
-  "reasons": ["PASSWORD_TOO_SHORT", "MISSING_SYMBOL"]
-}
+{ "ok": false, "msg": "Evita nome/cognome o parti dell’email (anche con sostituzioni tipo 0→o, 1→i)." }
 ~~~
 
 ---
 
 ## Endpoint DS4/DS5 — Experiments (consultazione ed export)
 
-Questi endpoint leggono i risultati salvati dagli esperimenti in:
-- `src/experiments/outputs/<runId>/`
+Per default l’API legge i run da:
+- `src/experiments/outputs/`
+
+Puoi cambiare directory con:
+- `PSM_EXPERIMENTS_DIR=/path/assoluto/agli/outputs`
 
 ### GET /experiments
 Lista run disponibili.
-
-Esempio:
 ~~~bash
 curl.exe -s http://localhost:3000/experiments
 ~~~
 
----
-
 ### GET /experiments/:runId?limit=N
-Dettaglio run con meta + aggregati + preview (N record).  
-Nota: la preview può essere esposta come `resultsPreview` (chiave usata dalla dashboard DS4).
-
-Esempio:
+Dettaglio run con meta + aggregati + preview.
 ~~~bash
-curl.exe -s "http://localhost:3000/experiments/sample_run?limit=10"
+curl.exe -s "http://localhost:3000/experiments/run_smoke_ci?limit=10"
 ~~~
-
----
 
 ### GET /experiments/:runId/export?format=...
 Export supportati:
@@ -149,41 +151,30 @@ Export supportati:
 
 Esempio (CSV):
 ~~~bash
-curl.exe -s "http://localhost:3000/experiments/sample_run/export?format=csv" -o results.csv
+curl.exe -s "http://localhost:3000/experiments/run_smoke_ci/export?format=csv" -o results.csv
 ~~~
 
 ---
 
-## Integrazione con Dashboard (DS4)
-La dashboard è in:
-- `src/web/experiments.html`
-- `src/web/experiments.js`
+## Test automatici (Jest) + CI
+I test sono in:
+- `src/api/__tests__/`
 
-Requisiti per usarla:
-1) API avviata su `http://localhost:3000`
-2) almeno 1 run in `src/experiments/outputs/` (es. `npm run run:sample` in `src/experiments`)
-3) servire `src/` come root (per aprire `http://localhost:8080/web/experiments.html`)
+Esecuzione locale:
+~~~bash
+cd src/api
+npm install
+npm test
+~~~
 
----
-
-## Troubleshooting
-- **/experiments vuoto**:
-  - non esistono run in `src/experiments/outputs/`
-  - genera una run in `src/experiments` e riprova
-- **/experiments/:runId 404**:
-  - runId inesistente o cartella output mancante
-- **export scarica un file vuoto**:
-  - controlla che in `outputs/<runId>/` esista `results.json`
-- **PowerShell error su curl**:
-  - usare `curl.exe` (non `curl`)
+In GitHub Actions:
+- workflow “CI - Tests” esegue `npm test`
+- workflow “API Smoketest” verifica gli endpoint experiments/export su una run smoke
 
 ---
 
 ## Nota architetturale: single source of truth
 - L’engine in `src/engine/psmEngine.js` definisce scoring, pattern, feedback e policy finale.
-- L’API non deve duplicare regole/soglie: deve importare e usare l’engine.
+- L’API valida input, compone `personalTokens` dal profilo utente (se presente) e delega all’engine.
 - Ogni modifica alle policy va fatta nell’engine, poi verificata con test e regressioni.
-
-
-
 
