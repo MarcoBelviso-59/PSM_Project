@@ -28,11 +28,11 @@ Questo README è aggiornato al **31/12/2025**.
 - ✅ **DS3 (runner esperimenti + baseline)**: esecuzione su dataset + confronto zxcvbn + output su file.
 - ✅ **DS4 (dashboard risultati)**: `src/web/experiments.html` + `src/web/experiments.js`.
 - ✅ **DS5 (export)**: export risultati via API (CSV/TSV/ExcelCSV/JSON) + pulsanti in dashboard.
+- ✅ **Docker / docker-compose**: demo riproducibile (API + Web) con mount degli outputs esperimenti.
 - ✅ **Test automatici + CI**: workflow “CI - Tests” (Jest su API/engine) + workflow di smoketest endpoint experiments.
 
 ### Da completare (prima della relazione finale) ⏳
 - ⏳ **Diagramma delle classi** (coerente con Use Case + Sequence DS1–DS5).
-- ⏳ **Docker / docker-compose** (API + UI + gestione outputs esperimenti).
 - ⏳ Refinement documentale: allineare i README e chiudere eventuali TODO nei docs (la relazione finale sarà l’ultima cosa).
 
 ---
@@ -46,6 +46,8 @@ Questo README è aggiornato al **31/12/2025**.
 - `docs/` — documentazione (specifiche, UML, architettura, valutazione, relazione, presentazione)
 - `tests/` — test plan manuale (checklist ripetibile)
 - `.github/workflows/` — CI (tests) + experiments + smoketest API
+- `docker/` — Dockerfile per API e Web (demo riproducibile)
+- `docker-compose.yml` — compose per API + Web
 
 ---
 
@@ -66,6 +68,36 @@ cd src
 npx http-server -p 8080
 ~~~
 Apri: `http://localhost:8080/web/`
+
+---
+
+## Docker (demo riproducibile)
+
+Prerequisiti: Docker Desktop (o Docker Engine) + Docker Compose.
+
+1) Assicurati che esista la cartella `src/experiments/outputs/`.
+   - In repo può essere presente tramite un file tipo `src/experiments/outputs/.gitkeep`.
+
+2) Avvio (UI + API):
+~~~bash
+docker compose up --build
+~~~
+
+- UI (DS1): `http://localhost:8080/web/`
+- Dashboard (DS4): `http://localhost:8080/web/experiments.html`
+- API (DS2): `http://localhost:3000/health`
+
+3) Genera una run (sul tuo PC, per popolare la dashboard):
+~~~bash
+cd src/experiments
+npm install
+npm run run:sample
+~~~
+
+4) Stop:
+~~~bash
+docker compose down
+~~~
 
 ---
 
@@ -138,3 +170,4 @@ In GitHub Actions:
 - Se apri `index.html` via `file://` potresti avere problemi di path: usa sempre un server statico.
 
 ---
+
