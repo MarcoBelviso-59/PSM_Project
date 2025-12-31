@@ -1,16 +1,147 @@
-# Architettura (PSM_Project) — Componenti, responsabilità e interfacce
+# docs/03_architettura — Architettura e responsabilità
 
-Questa cartella raccoglie la descrizione architetturale del progetto e gli artefatti di supporto (diagramma delle classi e/o componenti, note sulle interfacce, scelte progettuali). L’obiettivo è mostrare in modo chiaro come i file presenti in `src/` realizzano gli scenari modellati in UML (Use Case e Sequence) e come le responsabilità sono distribuite tra UI, engine, API e modulo esperimenti. La struttura della repository è volutamente modulare: `src/web/` contiene il prototipo UI, `src/engine/` contiene la logica di valutazione (single source of truth), `src/api/` espone l’engine come servizio (DS2) e `src/experiments/` esegue valutazioni batch ed export risultati (DS3–DS5). Questa separazione è un requisito di qualità: evita duplicazioni di regole, riduce rework e rende possibile confrontare output e risultati sperimentali in modo coerente.
+Questa cartella descrive l’architettura del progetto: componenti, responsabilità, dipendenze e contratti principali.
+Obiettivo: rendere evidente la coerenza tra **UML (DS1–DS5)** e implementazione in `src/`.
 
-Il componente centrale è l’Engine, che implementa la valutazione della password e produce un output deterministico e spiegabile. L’Engine prende in input una password e, quando disponibile, un array di `personalTokens` (token normalizzati derivati da nome/cognome/email) per penalizzare password che includono informazioni personali. In coerenza con il prototipo attuale, l’Engine espone un set minimo di funzioni: una funzione di valutazione (`evaluate(password, personalTokens)`) che restituisce sempre uno stato con `score` (0–100), `level` (livello testuale usato dalla UI) e `patterns` (pattern rilevati), una funzione di generazione suggerimenti (`generateFeedback(evaluation)`) che trasforma i pattern in messaggi per l’utente, e una funzione di validazione finale (`validateFinal(password, personalTokens)`) che decide se la password è accettabile per la creazione account (ritornando `{ ok, msg }`). Il principio architetturale è che la logica di scoring, le penalità e gli eventuali cap al punteggio risiedono esclusivamente nell’Engine; UI, API ed esperimenti consumano l’Engine e non duplicano regole. Questo garantisce che la stessa password, a parità di `personalTokens`, produca lo stesso risultato in demo, API e sperimentazione.
+Aggiornato al **31/12/2025**.
 
-La UI (cartella `src/web/`) è responsabile esclusivamente della presentazione e dell’interazione: acquisisce input utente (nome, cognome, email, password e conferma), costruisce `personalTokens` seguendo le regole di normalizzazione previste dal progetto, invoca l’Engine a ogni modifica della password per ottenere `score/level/patterns`, aggiorna gli elementi grafici (barra, etichetta, descrizione, lista suggerimenti) e, in fase di conferma, invoca `validateFinal` per abilitare o bloccare la creazione. In questa architettura la UI non deve conoscere i dettagli delle penalità: tratta l’Engine come una dipendenza, riceve un output e lo visualizza. Questo è importante per mantenere consistenza tra ciò che l’utente vede e ciò che l’API o gli esperimenti calcolano.
+---
 
-L’API (cartella `src/api/`) è un adattatore di trasporto: prende richieste HTTP e le traduce in chiamate all’Engine. Il comportamento atteso è definito dal contratto DS2: l’endpoint `POST /api/evaluate` riceve una `password` e opzionalmente `personalTokens` oppure `user` (da cui derivare i token), invoca `evaluate` e restituisce `score`, `level`, `patterns` e `suggestions` (queste ultime ottenute chiamando `generateFeedback` sull’output dell’Engine). L’endpoint `POST /api/validate` riceve lo stesso input e restituisce l’esito di `validateFinal`. Anche qui vale una regola architetturale non negoziabile: l’API non deve ricostruire a mano score o suggerimenti, ma limitarsi a validare input, comporre `personalTokens` quando necessario e delegare all’Engine. Questo consente di cambiare e migliorare il meter senza dover sincronizzare logiche duplicate.
+## 1) Principio guida: Single Source of Truth (SSOT)
+La logica di scoring e validazione vive **solo** in:
+- `src/engine/psmEngine.js`
 
-Il modulo Experiments (cartella `src/experiments/`) implementa lo scenario DS3–DS5: esecuzione batch su dataset, confronto con baseline selezionate, generazione di risultati ripetibili ed export CSV/JSON. Architetturalmente, gli esperimenti sono un “client” dell’Engine (e opzionalmente dell’API), ma per controllo e performance la scelta preferibile è invocare direttamente l’Engine. Il runner legge un dataset (CSV o JSON) che contiene almeno `password` e opzionalmente dati utente o `personalTokens`; invoca `evaluate` per ogni record, opzionalmente invoca baseline adapter(s) per confronto, e produce output in un formato ricco (JSON) e tabellare (CSV) includendo metadati di esecuzione (data/ora, opzioni, dataset, numero casi). La parte di analisi e grafici vive in `docs/04_valutazione_sperimentale/`, che prende in input i file export prodotti dal runner. La presenza di baseline adapter(s) è un punto architetturale importante: consente di isolare il confronto da strumenti esterni senza inquinare l’Engine, mantenendo l’Engine centrato su una singola responsabilità (valutazione del progetto).
+UI, API ed esperimenti **non duplicano** regole/soglie: invocano l’engine e presentano/serializzano l’output.
 
-Dal punto di vista della modellazione, i diagrammi UML (Use Case e Sequence) descrivono i flussi principali: valutazione real-time in UI (DS1), valutazione via API (DS2), e sperimentazione con export risultati (DS3–DS5). Questa architettura realizza tali flussi in modo coerente: la UI e l’API sono due “front-end” diversi per lo stesso Engine, mentre gli esperimenti sono una terza modalità di consumo orientata a misurazione e confronto. Le dipendenze devono essere unidirezionali: `web` dipende da `engine`, `api` dipende da `engine`, `experiments` dipende da `engine` (e al massimo da adapter baseline); l’Engine non dipende da UI/API/experiments. Questa direzione delle dipendenze è ciò che permette di testare l’Engine in isolamento, di cambiare UI senza intaccare regole, e di aggiornare metriche/esperimenti senza “toccare” la logica di scoring.
+Benefici:
+- consistenza (stesso input → stesso output) tra demo UI, API e sperimentazione
+- manutenzione più semplice (una sola base logica)
+- test più facili (engine testabile indirettamente via API)
 
-Artefatti attesi in questa cartella: un diagramma delle classi o dei componenti che mostri almeno i moduli `WebUI`, `Engine`, `APIModule`, `ExperimentRunner`, `BaselineAdapter` e `ResultsExporter/Analyzer`, con le relazioni di dipendenza e le interfacce essenziali (in particolare la firma concettuale di `evaluate`, `generateFeedback` e `validateFinal`, e il ruolo di `personalTokens`). Il “done” di questa documentazione architetturale è raggiunto quando un lettore esterno può: (1) capire dove si trova ogni responsabilità, (2) collegare i flussi DS a file/cartelle reali in repo, e (3) capire come UI, API ed esperimenti producono output coerente perché dipendono dallo stesso Engine.
+---
+
+## 2) Componenti (mappa rapida)
+
+### A) Engine (core)
+Path: `src/engine/psmEngine.js`
+
+Responsabilità:
+- `evaluate(pw, personalTokens)` → score/level/patterns
+- `generateFeedback(evaluation)` → suggerimenti testuali
+- `validateFinal(pw, personalTokens)` → accetta/rifiuta per registrazione
+
+Output principali:
+- `evaluate(...)` → `{ score, level, patterns }`
+- `validateFinal(...)` → `{ ok, msg }`
+
+---
+
+### B) Web UI (DS1)
+Path: `src/web/`
+
+Responsabilità:
+- raccolta dati utente (nome/cognome/email)
+- costruzione `personalTokens` (normalizzati)
+- valutazione live: `evaluate(...)` + `generateFeedback(...)`
+- controllo finale: `validateFinal(...)`
+
+Nota: la UI non implementa penalità/soglie: visualizza l’output engine.
+
+---
+
+### C) API REST (DS2)
+Path: `src/api/server.js`
+
+Responsabilità:
+- validazione input (limiti, formati, opzioni)
+- costruzione `personalTokens` da `user` (se presente)
+- delega all’engine e serializzazione JSON
+
+Endpoint DS2:
+- `POST /api/evaluate` (+ alias `POST /evaluatePassword`)
+- `POST /api/validate`
+
+Contratto sintetico:
+- `/api/evaluate` → `{ score, level, patterns, suggestions? }`
+- `/api/validate` → `{ ok, msg }`
+
+---
+
+### D) Experiments (DS3–DS5)
+Path: `src/experiments/`
+
+Responsabilità:
+- generazione dataset riproducibili (seed)
+- esecuzione batch: engine vs baseline (zxcvbn)
+- scrittura outputs su file (per runId)
+
+Output tipici per run:
+- `meta.json`
+- `results.json`
+- `results.csv`, `results.tsv`, `results_excel.csv`
+
+---
+
+### E) Dashboard (DS4)
+Path: `src/web/experiments.html` + `src/web/experiments.js`
+
+Responsabilità:
+- consultazione run via API:
+  - `GET /experiments`
+  - `GET /experiments/:runId?limit=N`
+  - `GET /experiments/:runId/export?format=...`
+- visualizzazione statistiche e pulsanti export
+
+---
+
+## 3) Dipendenze (direzione “corretta”)
+- `web` → dipende da `engine`
+- `api` → dipende da `engine`
+- `experiments` → dipende da `engine` (+ baseline adapter)
+- `engine` → non dipende da altri moduli del progetto
+
+Questo evita cicli e garantisce che l’engine resti riusabile/testabile.
+
+---
+
+## 4) Mapping UML → codice (DS1–DS5)
+
+- **DS1** (UI live + submit) → `src/web/app.js` (chiama `evaluate/generateFeedback/validateFinal`)
+- **DS2** (API evaluate/validate) → `src/api/server.js` (delega all’engine)
+- **DS3** (runner esperimenti) → `src/experiments/run.js`
+- **DS4** (dashboard) → `src/web/experiments.html` + `src/web/experiments.js` + endpoint API `/experiments`
+- **DS5** (export) → endpoint API `/experiments/:runId/export?format=...`
+
+---
+
+## 5) Contratti principali (per diagramma classi/componenti)
+
+### Engine
+- `evaluate(password: string, personalTokens: string[]) -> { score: number, level: string, patterns: Pattern[] }`
+- `generateFeedback(evaluation) -> string[]`
+- `validateFinal(password: string, personalTokens: string[]) -> { ok: boolean, msg: string }`
+
+Dove `Pattern` è un oggetto con:
+- `type: string`
+- campi opzionali (es. `hits`, `matched`, …) a seconda del pattern
+
+### API (DS2)
+- `POST /api/evaluate` request:
+  - `password: string`
+  - opzionale `user: { firstName, lastName, email }`
+  - opzionale `options: { includeFeedback: boolean }`
+- response:
+  - `{ score, level, patterns }` + opzionale `{ suggestions: string[] }`
+
+- `POST /api/validate` response:
+  - `{ ok, msg }`
+
+---
+
+## 6) Cosa manca (deliverable architetturali)
+- **Diagramma delle classi** (o component diagram + class diagram “core”):
+  - almeno: Engine, API, Web UI, ExperimentRunner, BaselineAdapter, ResultsRepository/Exporter
+- **Docker / compose** per demo ripetibile (API + UI + outputs)
+
+(La relazione finale verrà fatta per ultima, dopo aver chiuso questi punti.)
 
