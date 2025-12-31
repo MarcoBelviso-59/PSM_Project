@@ -1,0 +1,16 @@
+.git
+.github
+docs
+tests
+**/node_modules
+**/npm-debug.log
+**/coverage
+src/experiments/outputs
+*.zip
+*.pdf
+*.png
+*.jpg
+*.jpeg
+*.webp
+.DS_Store
+Thumbs.db
