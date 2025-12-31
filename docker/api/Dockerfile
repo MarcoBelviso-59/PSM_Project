@@ -6,7 +6,7 @@ WORKDIR /app
 COPY src/api/package*.json ./src/api/
 
 # Install deps API
-RUN cd src/api && npm ci --omit=dev
+RUN cd src/api && npm install --omit=dev
 
 # Copiamo il codice necessario: API + Engine + Experiments (per leggere outputs)
 COPY src/api ./src/api
