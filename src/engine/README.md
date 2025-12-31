@@ -2,37 +2,32 @@
 
 Questa cartella contiene l’engine che implementa la logica del Password Strength Meter:
 - scoring 0–100
-- pattern detection (sequenze, ripetizioni, dizionari/small-set, token personali, ecc.)
+- pattern detection (sequenze, ripetizioni, dizionari/small-set, token personali, pop culture, ecc.)
 - generazione feedback (suggerimenti)
-- policy finale di accettazione (validateFinal)
+- policy finale di accettazione (`validateFinal`)
 
-Aggiornato al **27/12/2025**.
+Aggiornato al **31/12/2025**.
 
 ---
 
 ## Principio chiave: single source of truth
-`psmEngine.js` è la **fonte unica** di regole e soglie.  
-Tutti gli altri componenti devono **riusare** l’engine:
+`psmEngine.js` è la **fonte unica** di regole e soglie.
 
+Tutti gli altri componenti devono **riusare** l’engine:
 - Web UI (DS1): `src/web/` usa l’engine in-browser
 - API (DS2): `src/api/` importa lo stesso engine in Node
-- Experiments (DS3–DS5): `src/experiments/` usa l’engine per confronti contro baseline
-- Dashboard (DS4): visualizza output già prodotti dall’engine (via API)
+- Experiments (DS3–DS5): `src/experiments/` usa l’engine per batch e confronto baseline
 
 Obiettivo: evitare incoerenze (stesso input → stesso output qualitativo ovunque).
 
 ---
 
 ## File
-- `psmEngine.js` — implementazione engine
-- (eventuali README aggiuntivi) — note e scelte progettuali
+- `psmEngine.js` — implementazione engine (dual-mode: browser + Node)
 
 ---
 
 ## Modalità d’uso (browser e Node)
-L’engine supporta due modalità:
-- **Browser**: espone `window.PSMEngine`
-- **Node/CommonJS**: `module.exports = ...`
 
 ### Browser (DS1)
 In `src/web/index.html`:
@@ -54,63 +49,69 @@ console.log(r);
 
 ---
 
-## API principale (funzioni)
-Le funzioni possono variare leggermente, ma i concetti sono questi:
+## API principale (funzioni usate dal progetto)
 
-- `detectPatterns(password, personalTokens?)`
-  - ritorna lista pattern rilevati (sequenze, ripetizioni, common words, token personali, ecc.)
-- `evaluate(password, personalTokens?)`
-  - ritorna valutazione “completa” con score, level, patterns, (eventuali) dettagli utili
-- `evaluatePassword(password, user?, options?)`
-  - wrapper più comodo per UI/API (costruisce token personali dal profilo e include feedback se richiesto)
-- `generateFeedback(evaluation)`
-  - produce suggerimenti coerenti con i pattern rilevati
-- `validateFinal(password, personalTokens?)`
-  - applica la **policy finale** (accetta/rifiuta) con motivazioni
+### `evaluate(password, personalTokens=[])`
+Ritorna la valutazione “core” usata da UI e API:
 
----
+- output: `{ score, level, patterns }`
+- `patterns` è un array di oggetti (almeno `{ type }`), con campi aggiuntivi per alcuni pattern (es. token matchati).
 
-## validateFinal: cosa deve garantire
-`validateFinal` è lo “sbarramento” finale per accettare una password in registrazione:
-- ritorna un oggetto `{ ok, score, level, reasons }`
-- se `ok=false` deve spiegare i motivi (es. troppo corta, pattern critici, token personali, ecc.)
-- deve essere coerente con score/level e con i suggerimenti
+Esempio:
+~~~js
+{
+  score: 59,
+  level: "Discreta",
+  patterns: [
+    { type: "YEAR_OR_DATE" },
+    { type: "REPEAT_2" },
+    { type: "PERSONAL_INFO", hits: 2, matched: ["mario","rossi"] }
+  ]
+}
+~~~
 
-I vincoli sono deliberatamente “robusti”:
-- non fissare numeri rigidi ovunque (taratura può evolvere)
-- fissare invece regole chiare: es. cap su pattern critici, penalità per token personali, ecc.
+### `generateFeedback(evaluation)`
+Trasforma `patterns` in suggerimenti testuali per l’utente.
 
----
+- input: oggetto ritornato da `evaluate(...)`
+- output: `string[]` (lista di suggerimenti)
 
-## Come validare manualmente l’engine (quick check)
-~~~bash
-node -e '
-const e = require("./src/engine/psmEngine.js");
-const tokens = ["mario","rossi","mario.rossi","example","com"];
-const pw = "MarioRossi2026!";
-const ev = e.evaluate(pw, tokens);
-console.log("eval:", ev);
-console.log("feedback:", e.generateFeedback(ev));
-console.log("final:", e.validateFinal(pw, tokens));
-'
+Esempio:
+~~~js
+[
+  "Evita caratteri uguali consecutivi (es. AA, 11).",
+  "Evita anni o date (es. 1998, 2024, 12/05): sono tra i primi tentativi.",
+  "Evita di includere nome/cognome o parti dell’email nella password."
+]
+~~~
+
+### `validateFinal(password, personalTokens=[])`
+È lo “sbarramento” finale per accettare una password in registrazione.
+
+- output: `{ ok: boolean, msg: string }`
+- se `ok=false`, `msg` spiega il motivo (min length, classi mancanti, token personali, ecc.)
+
+Esempio:
+~~~js
+{ ok: false, msg: "Minimo 8 caratteri." }
 ~~~
 
 ---
 
-## Integrazione con test
-- I test manuali minimi sono in `tests/README.md`.
-- I test automatizzati (da aggiungere) devono concentrarsi su:
-  - pattern detection (regressioni su sequenze/small-set/personal tokens)
-  - coerenza tra `evaluate`, `generateFeedback` e `validateFinal`
-  - casi pass/fail stabili (evitare asserzioni troppo fragili sui punteggi esatti)
+## Utility (usate dal progetto)
+- `normalize(str)` — normalizzazione (lowercase, trim, ecc.)
+- `emailParts(email)` — tokenizzazione email (per `personalTokens`)
+- `detectPatterns(password, personalTokens=[])` — rilevazione pattern (debug/esperimenti)
 
 ---
 
-## Note pratiche
-- Qualsiasi modifica a soglie/policy va fatta **solo qui**.
-- Dopo ogni modifica:
-  - verificare rapidamente i casi del test plan (`tests/README.md`)
-  - eseguire 1 run esperimenti piccolo (per vedere delta PSM vs baseline)
-  - controllare coerenza UI/API (stesso input, stesso livello/pattern e outcome finale)
+## Nota: `evaluatePassword(...)`
+Nel file esiste anche `evaluatePassword(pw, personalTokens)` che ritorna `{score, level, tips}`.
+È considerata una funzione “legacy/utility”; il flusso principale del progetto (UI/API/experimenti) usa:
+- `evaluate(...)`
+- `generateFeedback(...)`
+- `validateFinal(...)`
+
+
 
 
