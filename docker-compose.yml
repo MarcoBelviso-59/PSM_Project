@@ -1,0 +1,28 @@
+services:
+  api:
+    build:
+      context: .
+      dockerfile: docker/api/Dockerfile
+    container_name: psm_api
+    environment:
+      - NODE_ENV=production
+      - PORT=3000
+      # L'API legge le run da questa directory (montata dal bind sotto)
+      - PSM_EXPERIMENTS_DIR=/app/src/experiments/outputs
+      # opzionale: abilita API key (se vuoi)
+      # - PSM_API_KEY=changeme
+    ports:
+      - "3000:3000"
+    volumes:
+      # persistiamo outputs esperimenti sul filesystem host (così la dashboard li vede)
+      - ./src/experiments/outputs:/app/src/experiments/outputs
+
+  web:
+    build:
+      context: .
+      dockerfile: docker/web/Dockerfile
+    container_name: psm_web
+    ports:
+      - "8080:8080"
+    depends_on:
+      - api
