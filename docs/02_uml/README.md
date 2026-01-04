@@ -13,7 +13,7 @@ Aggiornato al **27/12/2025**.
 - `sequence/`  
   Diagrammi di sequenza relativi agli scenari DS1–DS5.
 
-  - `class/`  
+- `class/`  
   Diagramma delle classi.
 
 ---
