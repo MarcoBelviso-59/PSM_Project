@@ -13,8 +13,8 @@ Aggiornato al **27/12/2025**.
 - `sequence/`  
   Diagrammi di sequenza relativi agli scenari DS1–DS5.
 
-- (eventuale) `class/`  
-  Diagramma delle classi (se richiesto dal corso/linee guida).
+  - `class/`  
+  Diagramma delle classi.
 
 ---
 
