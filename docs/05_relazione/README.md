@@ -1,47 +1,57 @@
 # docs/05_relazione — Relazione finale
 
-Questa cartella è destinata alla relazione finale del progetto (testo, immagini, risultati sperimentali).
-**Nota di progetto:** la relazione finale sarà l’ultima cosa che completeremo; qui teniamo la struttura e i riferimenti.
+Questa cartella è destinata alla **relazione tecnica finale** del progetto (testo, immagini, tabelle, bibliografia).
+La relazione deve rispettare le **specifiche ufficiali** (struttura e contenuti richiesti).
 
-Aggiornato al **31/12/2025**.
+**Aggiornato al:** **05/01/2026**  
+
 
 ---
 
 ## Contenuti attesi (deliverable)
+Struttura consigliata (da adattare alle specifiche):
 - Introduzione e obiettivi (DS1–DS5)
-- Requisiti e vincoli (da `docs/00_specs/`)
-- Architettura e scelte progettuali:
-  - Engine SSOT
-  - separazione UI/API/experiments
-  - contratti principali (evaluate/validate/export)
-- Implementazione:
-  - punti chiave (pattern detection, cap, token personali, pop culture, ecc.)
-  - endpoint e formati di risposta
-- Esperimenti:
-  - dataset usati + seed
-  - confronto con baseline (zxcvbn)
-  - tabelle/grafici + interpretazione
+- Stato dell’arte e riferimenti (paper su password strength + baseline)
+- Processo di sviluppo (gantt, rischi, costi/effort)
+- Requisiti (funzionali + non funzionali, es. FURPS+)
+- Architettura e scelte progettuali (SSOT, separazione moduli)
+- Implementazione (punti chiave: pattern, cap, token personali, pop culture, ecc.)
+- Prototipo e modalità d’esecuzione (local + docker)
+- Validazione e verifica (test manuali + test automatici + CI)
+- Valutazione sperimentale (PSM vs baseline, dataset/seed, risultati e figure)
+- Discussione (limiti, minacce alla validità, trade-off)
+- Conclusioni e sviluppi futuri
+- Bibliografia
+
+---
+
+## Materiali già pronti da includere (in repo)
+- UML:
+  - Use case + sequence: `docs/02_uml/`
+  - class diagram: `docs/02_uml/class/PSM_diagramma_classi.pdf`
+- Architettura:
+  - `docs/03_architettura/`
+- Risultati sperimentali “ufficiali”:
+  - `docs/04_valutazione_sperimentale/` (artifacts + figures)
 - Test:
-  - test plan manuale: `/tests/README.md`
+  - test plan manuale: `tests/README.md`
   - test automatici (Jest): `src/api/__tests__/`
-  - CI: `.github/workflows/test.yml` + workflow di smoketest / experiments
-- Conclusioni e possibili estensioni
+  - workflow CI: `.github/workflows/`
 
 ---
 
-## Materiali già pronti da includere
-- Risultati “ufficiali” in `docs/04_valutazione_sperimentale/`:
-  - artifacts (dataset/meta/results/xlsx)
-  - figures (png)
-- Checklist demo/test manuale: `tests/README.md`
+## Cosa manca (da fare in questa cartella)
+- ⏳ Creare il file principale della relazione (es. `relazione.tex` o `relazione.docx`)
+- ⏳ Integrare figure e tabelle (da `docs/04_valutazione_sperimentale/figures/` e artifacts)
+- ⏳ Bibliografia: aggiungere i paper in `docs/99_riferimenti/` e citarli correttamente
+- ⏳ Sezione “minacce alla validità” per la parte sperimentale (baseline, dataset, seed, generalizzabilità)
 
 ---
 
-## Stato attuale
-- Codice DS1–DS5 completato.
-- Prima della relazione finale restano da chiudere:
-  - diagramma delle classi
-  - docker / compose
-  - rifinitura documentale (README allineati)
+## Regola di coerenza (importante)
+La relazione deve essere coerente con:
+- contratti engine/API (stessi campi e nomi)
+- struttura e risultati della run di riferimento
+- demo e presentazione (slide devono “raccontare la stessa storia”)
 
-Quando questi punti sono chiusi, si procede alla stesura finale (testo + immagini + tabelle/grafici).
+Se cambiate policy nell’engine o formati dei risultati, aggiornate **prima** gli artifacts e **poi** testo/figure.
