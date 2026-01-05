@@ -1,9 +1,10 @@
 # docs/03_architettura — Architettura e responsabilità
 
-Questa cartella descrive l’architettura del progetto: componenti, responsabilità, dipendenze e contratti principali.
+Questa cartella descrive l’architettura del progetto: componenti, responsabilità, dipendenze e contratti principali.  
 Obiettivo: rendere evidente la coerenza tra **UML (DS1–DS5)** e implementazione in `src/`.
 
-Aggiornato al **31/12/2025**.
+**Aggiornato al:** **05/01/2026**  
+
 
 ---
 
@@ -105,17 +106,15 @@ Questo evita cicli e garantisce che l’engine resti riusabile/testabile.
 ---
 
 ## 4) Mapping UML → codice (DS1–DS5)
-
-- **DS1** (UI live + submit) → `src/web/app.js` (chiama `evaluate/generateFeedback/validateFinal`)
-- **DS2** (API evaluate/validate) → `src/api/server.js` (delega all’engine)
+- **DS1** (UI live + submit) → `src/web/app.js`
+- **DS2** (API evaluate/validate) → `src/api/server.js`
 - **DS3** (runner esperimenti) → `src/experiments/run.js`
-- **DS4** (dashboard) → `src/web/experiments.html` + `src/web/experiments.js` + endpoint API `/experiments`
+- **DS4** (dashboard) → `src/web/experiments.html` + `src/web/experiments.js`
 - **DS5** (export) → endpoint API `/experiments/:runId/export?format=...`
 
 ---
 
-## 5) Contratti principali (per diagramma classi/componenti)
-
+## 5) Contratti principali (per class diagram e relazione)
 ### Engine
 - `evaluate(password: string, personalTokens: string[]) -> { score: number, level: string, patterns: Pattern[] }`
 - `generateFeedback(evaluation) -> string[]`
@@ -138,10 +137,12 @@ Dove `Pattern` è un oggetto con:
 
 ---
 
-## 6) Cosa manca (deliverable architetturali)
-- **Diagramma delle classi** (o component diagram + class diagram “core”):
-  - almeno: Engine, API, Web UI, ExperimentRunner, BaselineAdapter, ResultsRepository/Exporter
-- **Docker / compose** per demo ripetibile (API + UI + outputs)
+## 6) Deliverable residui (architettura → consegna)
+A livello architetturale, gli artefatti fondamentali sono già presenti:
+- ✅ Class Diagram in `docs/02_uml/class/`
+- ✅ Docker/compose in root + cartella `docker/`
 
-(La relazione finale verrà fatta per ultima, dopo aver chiuso questi punti.)
-
+Per chiudere la consegna servono ora:
+- ⏳ relazione tecnica (con sezione architettura + motivazioni)
+- ⏳ presentazione + demo 1’30” (script ripetibile)
+- ⏳ riferimenti/paper versionati in `docs/99_riferimenti/` e citati in relazione
