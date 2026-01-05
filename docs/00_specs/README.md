@@ -2,32 +2,38 @@
 
 Questa cartella contiene i documenti “ufficiali” che definiscono requisiti e vincoli di consegna del progetto.
 
-Aggiornato al **27/12/2025**.
+**Aggiornato al:** **05/01/2026**  
 
 ---
 
 ## Contenuto
 - `Specifiche_Progetto_Richieste.pdf`  
-  Elenca deliverable richiesti (DS1–DS5), output attesi e vincoli.
+  Elenca deliverable richiesti, struttura obbligatoria della presentazione/relazione, e vincoli (incluso tempo demo).
 
 - `Linee_Guida_PSM_Project.pdf`  
-  Linee guida di struttura, criteri di valutazione e consigli di implementazione.
+  Linee guida su struttura repo, qualità del deliverable, requisiti (anche non funzionali), sperimentazione, validazione/verifica.
 
 ---
 
 ## Come usare questa cartella
-1) Leggere prima le **specifiche** (cosa è obbligatorio).
-2) Leggere poi le **linee guida** (come presentare e dimostrare il lavoro).
-3) Usare questi documenti come riferimento durante:
-   - scrittura relazione
+1) Leggere prima le **specifiche** (cosa è obbligatorio e come verrà valutato).
+2) Leggere poi le **linee guida** (come presentare, argomentare e dimostrare).
+3) Usare questi documenti come checklist durante:
+   - stesura relazione
    - preparazione presentazione
-   - definizione test plan
-   - verifica finale (checklist DS1–DS5)
+   - preparazione demo 1’30”
+   - revisione finale della repo (coerenza e riproducibilità)
 
 ---
 
-## Stato attuale
-Alla data di aggiornamento:
-- DS1/DS2/DS3/DS4/DS5 sono implementati a livello codice.
-- Restano da completare: test automatici + CI + deliverable finali (relazione/presentazione).
+## Stato attuale (in repo)
+- ✅ Implementazione DS1–DS5 completata (UI + Engine + API + Experiments + Dashboard + Export).
+- ✅ Docker/compose presenti per demo ripetibile.
+- ✅ Test automatici e CI presenti (Jest + workflow).
+- ✅ UML presente (use case + sequence + class diagram).
 
+Deliverable rimanenti:
+- ⏳ Relazione tecnica finale (`docs/05_relazione/`)
+- ⏳ Presentazione + script demo 1’30” (`docs/06_presentazione/`)
+- ⏳ Riferimenti/paper versionati e citabili (`docs/99_riferimenti/`)
+- ⏳ Allineamento README/documentazione (evitare TODO obsoleti)
