@@ -45,5 +45,4 @@ Mapping pratico (UML → codice):
   - Use Case + Sequence DS1–DS5
   - Class Diagram in `docs/02_uml/class/`
 
-Se modificate contratti o responsabilità (es. output API, struttura `results.json`, o funzioni engine),
-aggiornate **prima** il diagramma classi e **poi** riflettete i cambi in relazione/presentazione.
+
