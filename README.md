@@ -1,14 +1,15 @@
 # PSM_Project — Password Strength Meter (UI + Engine + API + Experiments)
 
-Progetto di Ingegneria del Software (A.A. 2025/2026): realizzazione di un **Password Strength Meter** con architettura modulare e “single source of truth”.
+Progetto di Ingegneria del Software (A.A. 2025/2026): realizzazione di un **Password Strength Meter** con architettura modulare e principio **Single Source of Truth (SSOT)**.
 
 - **Web UI (DS1)**: registrazione a 2 step + feedback in tempo reale
-- **Engine**: scoring 0–100, pattern detection, suggerimenti, policy di validazione finale
+- **Engine (SSOT)**: scoring 0–100, pattern detection, suggerimenti, policy di validazione finale
 - **API REST (DS2)**: espone l’engine (evaluate/validate) con JSON standard
 - **Esperimenti (DS3–DS5)**: runner + baseline (zxcvbn), risultati persistiti ed export via API
 - **Dashboard (DS4)**: pagina web per consultare run, statistiche e download export
 
-Questo README è aggiornato al **31/12/2025**.
+**Aggiornato al:** **05/01/2026**  
+**Scadenza progetto (proroga):** **10/01/2026**
 
 ---
 
@@ -23,17 +24,19 @@ Questo README è aggiornato al **31/12/2025**.
 
 ### Implementato e verificabile end-to-end ✅
 - ✅ **DS1 (Web UI)**: UI a 2 step con valutazione live + validazione finale.
-- ✅ **Engine separato**: modulo condiviso `src/engine/psmEngine.js` usato da UI/API/esperimenti.
+- ✅ **Engine separato (SSOT)**: modulo condiviso `src/engine/psmEngine.js` usato da UI/API/esperimenti.
 - ✅ **DS2 (API REST)**: `POST /api/evaluate`, `POST /api/validate` (+ alias `POST /evaluatePassword`).
 - ✅ **DS3 (runner esperimenti + baseline)**: esecuzione su dataset + confronto zxcvbn + output su file.
 - ✅ **DS4 (dashboard risultati)**: `src/web/experiments.html` + `src/web/experiments.js`.
-- ✅ **DS5 (export)**: export risultati via API (CSV/TSV/ExcelCSV/JSON) + pulsanti in dashboard.
+- ✅ **DS5 (export)**: export via API (CSV/TSV/ExcelCSV/JSON) + pulsanti in dashboard.
 - ✅ **Docker / docker-compose**: demo riproducibile (API + Web) con mount degli outputs esperimenti.
-- ✅ **Test automatici + CI**: workflow “CI - Tests” (Jest su API/engine) + workflow di smoketest endpoint experiments.
+- ✅ **Test automatici + CI**: workflow “CI - Tests” (Jest) + workflow di smoketest endpoint experiments/export.
+- ✅ **UML completo**: Use Case + Sequence + **Class Diagram** in `docs/02_uml/` (il diagramma classi è in `docs/02_uml/class/`).
 
-### Da completare (prima della relazione finale) ⏳
-- ⏳ **Diagramma delle classi** (coerente con Use Case + Sequence DS1–DS5).
-- ⏳ Refinement documentale: allineare i README e chiudere eventuali TODO nei docs (la relazione finale sarà l’ultima cosa).
+### Da completare (deliverable finali) ⏳
+- ⏳ **Relazione tecnica** (in `docs/05_relazione/`) conforme alle specifiche.
+- ⏳ **Presentazione** + **script demo 1’30”** (in `docs/06_presentazione/`) conforme alle specifiche.
+- ⏳ **Rifinitura documentale**: allineamento README e popolamento `docs/99_riferimenti/` con i paper citati.
 
 ---
 
@@ -43,7 +46,7 @@ Questo README è aggiornato al **31/12/2025**.
   - `src/engine/` — Engine condiviso (single source of truth)
   - `src/api/` — API REST (DS2) + backend experiments (DS4/DS5)
   - `src/experiments/` — Esperimenti (DS3–DS5): generator + runner + baseline + outputs
-- `docs/` — documentazione (specifiche, UML, architettura, valutazione, relazione, presentazione)
+- `docs/` — documentazione (specifiche, UML, architettura, valutazione, relazione, presentazione, riferimenti)
 - `tests/` — test plan manuale (checklist ripetibile)
 - `.github/workflows/` — CI (tests) + experiments + smoketest API
 - `docker/` — Dockerfile per API e Web (demo riproducibile)
@@ -72,11 +75,9 @@ Apri: `http://localhost:8080/web/`
 ---
 
 ## Docker (demo riproducibile)
-
 Prerequisiti: Docker Desktop (o Docker Engine) + Docker Compose.
 
 1) Assicurati che esista la cartella `src/experiments/outputs/`.
-   - In repo può essere presente tramite un file tipo `src/experiments/outputs/.gitkeep`.
 
 2) Avvio (UI + API):
 ~~~bash
@@ -159,15 +160,8 @@ npm install
 npm test
 ~~~
 
-In GitHub Actions:
-- workflow “CI - Tests” esegue `npm test`
-- workflow “API Smoketest” verifica endpoints experiments e export su una run smoke
-
 ---
 
 ## Note (Windows / PowerShell)
 - Per test API usare `curl.exe` (non l’alias PowerShell `Invoke-WebRequest`).
 - Se apri `index.html` via `file://` potresti avere problemi di path: usa sempre un server statico.
-
----
-
