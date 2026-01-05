@@ -1,8 +1,9 @@
 # PSM_Project — Documentazione (`docs/`)
 
-Questa cartella contiene tutta la documentazione del progetto (specifiche, analisi, UML, relazione, presentazione e riferimenti).
+Questa cartella contiene tutta la documentazione del progetto (specifiche, analisi, UML, architettura, valutazione sperimentale, relazione, presentazione e riferimenti).
 
-Aggiornato al **27/12/2025**.
+**Aggiornato al:** **05/01/2026**  
+
 
 ---
 
@@ -14,22 +15,25 @@ Aggiornato al **27/12/2025**.
   Bozza/analisi iniziale, scelte progettuali, note di contesto.
 
 - `02_uml/`  
-  Diagrammi UML (use case, sequence, eventuali class diagram).
+  Diagrammi UML:
+  - use case
+  - sequence (DS1–DS5)
+  - **class diagram** (ora in `02_uml/class/`)
 
-- `03_architettura/` (se presente)  
-  Materiale architetturale, note su componenti e interazioni.
+- `03_architettura/`  
+  Materiale architetturale: componenti, responsabilità, dipendenze e contratti.
 
-- `04_.../` (se presente)  
-  Cartelle intermedie usate per appunti o materiali di supporto.
+- `04_valutazione_sperimentale/`  
+  Run “di riferimento” (dataset/seed/risultati/figure) pronta da citare in relazione e slide.
 
 - `05_relazione/`  
-  Materiale per la relazione finale (testo, immagini, risultati sperimentali).
+  Materiale per la relazione finale (testo, immagini, tabelle, bibliografia).
 
 - `06_presentazione/`  
-  Materiale per le slide e la demo.
+  Materiale per slide e script demo (1’30”).
 
 - `99_riferimenti/`  
-  Paper e riferimenti (es. baseline, scelte di scoring, background security/usability).
+  Paper e riferimenti (da versionare in repo) usati in relazione/presentazione.
 
 ---
 
@@ -39,18 +43,18 @@ Aggiornato al **27/12/2025**.
 - Use Case: `02_uml/use-case/PSM_Diagramma_CU.pdf`
 - Sequence DS1–DS5: `02_uml/sequence/FileA_ImmaginiDS.pdf`
 - Spiegazione DS: `02_uml/sequence/FileB_DS Spiegazione.pdf`
+- Class Diagram: `02_uml/class/PSM_diagramma_classi.pdf`
 - Bozza/analisi iniziale: `01_analisi/Bozza_Progetto_PSM.pdf`
+- Run di riferimento: `04_valutazione_sperimentale/` (artifacts + figures)
 
 ---
 
-## Nota operativa
+## Nota operativa (coerenza)
 La documentazione serve a dimostrare coerenza tra:
 - requisiti / specifiche
 - implementazione (UI + API + Engine + Experiments + Dashboard)
 - evidenze sperimentali (confronto con baseline e export)
 - demo e relazione finale
 
-Se un file manca o è “placeholder”, va completato con almeno:
-- scopo della cartella
-- elenco file principali
-- come usare/leggere quel materiale
+
+- istruzioni minime su come usare/leggere quel materiale
