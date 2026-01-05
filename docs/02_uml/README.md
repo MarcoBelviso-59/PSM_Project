@@ -1,20 +1,21 @@
-# docs/02_uml — UML (Use Case + Sequence)
+# docs/02_uml — UML (Use Case + Sequence + Class)
 
-Questa cartella contiene i diagrammi UML utilizzati per descrivere scenari e interazioni del progetto (DS1–DS5).
+Questa cartella contiene i diagrammi UML utilizzati per descrivere scenari, componenti e interazioni del progetto (DS1–DS5).
 
-Aggiornato al **27/12/2025**.
+**Aggiornato al:** **05/01/2026**  
+**Scadenza progetto (proroga):** **10/01/2026**
 
 ---
 
 ## Sottocartelle
 - `use-case/`  
-  Diagrammi dei casi d’uso (attori e funzionalità).
+  Diagramma dei casi d’uso (attori e funzionalità).
 
 - `sequence/`  
-  Diagrammi di sequenza relativi agli scenari DS1–DS5.
+  Diagrammi di sequenza relativi agli scenari DS1–DS5 + spiegazione.
 
 - `class/`  
-  Diagramma delle classi.
+  **Diagramma delle classi** coerente con l’implementazione corrente (Engine + UI + API + Experiments + Export).
 
 ---
 
@@ -22,23 +23,27 @@ Aggiornato al **27/12/2025**.
 - Use Case: `use-case/PSM_Diagramma_CU.pdf`
 - Sequence (immagini): `sequence/FileA_ImmaginiDS.pdf`
 - Spiegazione Sequence: `sequence/FileB_DS Spiegazione.pdf`
+- Class Diagram: `class/PSM_diagramma_classi.pdf`
 
 ---
 
-## Come usare questi diagrammi
-- I diagrammi di sequenza sono la “checklist” funzionale:
-  ogni messaggio/scenario deve essere supportato dal codice.
-- La verifica pratica si fa con:
-  - UI DS1 (`src/web/`)
-  - API DS2 (`src/api/`)
-  - Experiments DS3–DS5 (`src/experiments/`)
-  - Dashboard DS4 (`src/web/experiments.html`)
+## Come usare questi diagrammi (per verifica e relazione)
+- I diagrammi di sequenza sono la “checklist” funzionale: ogni messaggio/scenario deve essere supportato dal codice.
+- Il diagramma delle classi descrive le responsabilità principali e i contratti usati in implementazione.
+
+Mapping pratico (UML → codice):
+- **DS1** (UI live + submit) → `src/web/app.js` (chiama `evaluate/generateFeedback/validateFinal`)
+- **DS2** (API evaluate/validate) → `src/api/server.js`
+- **DS3** (runner esperimenti) → `src/experiments/run.js`
+- **DS4** (dashboard) → `src/web/experiments.html` + `src/web/experiments.js` + endpoint API `/experiments`
+- **DS5** (export) → endpoint API `/experiments/:runId/export?format=...`
 
 ---
 
 ## Stato attuale
-Il codice copre gli scenari DS1–DS5:
-- UI (registrazione + valutazione live + validazione finale)
-- API (evaluate/validate)
-- esperimenti (runner + baseline)
-- dashboard + export
+- ✅ UML presente e coerente con la repo:
+  - Use Case + Sequence DS1–DS5
+  - Class Diagram in `docs/02_uml/class/`
+
+Se modificate contratti o responsabilità (es. output API, struttura `results.json`, o funzioni engine),
+aggiornate **prima** il diagramma classi e **poi** riflettete i cambi in relazione/presentazione.
