@@ -259,6 +259,14 @@ button:disabled { opacity: .45; cursor: not-allowed; box-shadow: none; transform
 .badge[data-level="Buona"]        { background:#dcfce7; color:#166534; }
 .badge[data-level="Molto forte"]  { background:#dbeafe; color:#1e40af; }
 
+.badge-policy { margin-left: 8px; }
+
+/* Stato policy */
+.badge-policy[data-policy="valid"]   { background:#dcfce7; color:#166534; }
+.badge-policy[data-policy="invalid"] { background:#fee2e2; color:#991b1b; }
+.badge-policy[data-policy="unknown"] { background:#e5e7eb; color:#374151; }
+
+
 ul { margin: 10px 0 0; padding-left: 18px; color: var(--muted); }
 li { margin: 6px 0; }
 
