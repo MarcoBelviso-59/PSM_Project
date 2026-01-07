@@ -33,6 +33,7 @@ const togglePw2 = $("togglePw2");
 const scoreEl = $("score");
 const fill = $("fill");
 const label = $("label");
+const policyLabel = $("policyLabel");
 const tipsEl = $("tips");
 const btnBack = $("btnBack");
 const btnCrea = $("btnCrea");
