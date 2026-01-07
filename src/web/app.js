@@ -77,13 +77,27 @@ function updateMeter() {
   const evaluation = evaluate(pw.value, personalTokens);
   const tips = generateFeedback(evaluation);
 
+  // VALIDAZIONE POLICY (pass/fail) separata dalla forza stimata
+  const v = validateFinal(pw.value, personalTokens);
+
   scoreEl.textContent = evaluation.score;
   fill.style.width = evaluation.score + "%";
 
+  // Badge "forza"
   label.textContent = evaluation.level;
   label.dataset.level = evaluation.level;
 
-  strengthDesc.textContent = descMap[evaluation.level] || "";
+  // Badge "policy"
+  if (policyLabel) {
+    policyLabel.textContent = v.ok ? "Valida" : "Non valida";
+    policyLabel.dataset.policy = v.ok ? "valid" : "invalid";
+  }
+
+  // Descrizione: non deve sembrare “accettata” se la policy fallisce
+  const baseDesc = descMap[evaluation.level] || "";
+  strengthDesc.textContent = v.ok
+    ? baseDesc
+    : `${baseDesc} — NON validabile: correggi i vincoli sotto.`;
 
   tipsEl.innerHTML = "";
   tips.forEach((t) => {
@@ -92,10 +106,9 @@ function updateMeter() {
     tipsEl.appendChild(li);
   });
 
-  const v = validateFinal(pw.value, personalTokens);
   const conf = updateConfirmUI();
 
-    if (!v.ok) {
+  if (!v.ok) {
     finalCheck.style.display = "block";
     finalCheck.textContent = v.msg;
   } else if (!conf.ok) {
@@ -106,11 +119,10 @@ function updateMeter() {
     finalCheck.textContent = "";
   }
 
-  // La policy (soglie, info personali, ecc.) è decisa SOLO dall'engine via validateFinal()
   const canCreate = v.ok && conf.ok;
   btnCrea.disabled = !canCreate;
-
 }
+
 
 btnContinua.addEventListener("click", () => {
   const nome = $("nome").value.trim();
