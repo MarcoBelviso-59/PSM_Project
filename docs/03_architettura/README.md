@@ -3,8 +3,7 @@
 Questa cartella descrive l’architettura del progetto: componenti, responsabilità, dipendenze e contratti principali.  
 Obiettivo: rendere evidente la coerenza tra **UML (DS1–DS5)** e implementazione in `src/`.
 
-**Aggiornato al:** **05/01/2026**  
-
+**Aggiornato al:** **10/01/2026**
 
 ---
 
@@ -137,12 +136,13 @@ Dove `Pattern` è un oggetto con:
 
 ---
 
-## 6) Deliverable residui (architettura → consegna)
-A livello architetturale, gli artefatti fondamentali sono già presenti:
-- ✅ Class Diagram in `docs/02_uml/class/`
-- ✅ Docker/compose in root + cartella `docker/`
+## 6) Stato deliverable (architettura → consegna)
+- ✅ Architettura SSOT implementata (engine riusato da UI/API/experiments).
+- ✅ Docker/compose presenti in root + cartella `docker/`.
+- ✅ Relazione tecnica: `docs/05_relazione/Relazione_tecnica_PSM.pdf`.
+- ✅ Presentazione (PDF): `docs/06_presentazione/PSM_presentazione.pdf`.
+- ✅ Paper e riferimenti: `docs/99_riferimenti/`.
 
-Per chiudere la consegna servono ora:
-- ⏳ relazione tecnica (con sezione architettura + motivazioni)
-- ⏳ presentazione + demo 1’30” (script ripetibile)
-- ⏳ riferimenti/paper versionati in `docs/99_riferimenti/` e citati in relazione
+Nota su file “pesanti”:
+- ℹ️ eventuali asset addizionali (PPTX/MP4) possono non essere versionati in repo per limiti di dimensione.
+  Lo script demo e i comandi di esecuzione rimangono in `docs/06_presentazione/README.md`.
