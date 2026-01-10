@@ -2,7 +2,7 @@
 
 Questa cartella contiene i PDF dei riferimenti bibliografici utilizzati nel progetto **PSM_Project** (relazione tecnica e presentazione).
 
-Aggiornato al **05/01/2025** — scadenza progetto prorogata al **10/01/2025**.
+**Aggiornato al:** **10/01/2026** — **scadenza progetto (proroga): 10/01/2026**
 
 ---
 
@@ -40,4 +40,4 @@ Aggiornato al **05/01/2025** — scadenza progetto prorogata al **10/01/2025**.
 ---
 
 ## Nota di coerenza
-I riferimenti presenti in questa cartella corrispondono ai lavori citati nella relazione (`docs/05_relazione/`) e/o richiamati nella presentazione (`docs/06_presentazione/`).
+I riferimenti presenti in questa cartella corrispondono ai lavori citati nella relazione (`docs/05_relazione/Relazione_tecnica_PSM.pdf`) e/o richiamati nella presentazione (`docs/06_presentazione/PSM_presentazione.pdf`).
