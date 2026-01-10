@@ -6,7 +6,7 @@ Questa cartella contiene l’engine che implementa la logica del Password Streng
 - generazione feedback (suggerimenti)
 - policy finale di accettazione (`validateFinal`)
 
-Aggiornato al **31/12/2025**.
+Aggiornato al **10/01/2026**.
 
 ---
 
