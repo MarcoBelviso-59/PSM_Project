@@ -4,7 +4,7 @@ Questa cartella contiene:
 - **UI statica DS1**: registrazione a due step + valutazione password in tempo reale
 - **Dashboard DS4**: consultazione run esperimenti via API (lista/dettaglio/statistiche/export)
 
-Aggiornato al **27/12/2025**.
+Aggiornato al **10/01/2025**.
 
 ---
 
