@@ -1,9 +1,18 @@
 # docs/06_presentazione — Slide e demo
 
-Questa cartella contiene materiale per la **presentazione finale** e la **demo** del progetto.
+Questa cartella contiene materiale per la **presentazione finale** e lo **script demo** del progetto.
 
-**Aggiornato al:** **05/01/2026**  
+**Aggiornato al:** **10/01/2026**
 
+---
+
+## Deliverable presenti in repo
+- `PSM_presentazione.pdf`  
+  Presentazione finale in formato PDF.
+
+Nota su file “pesanti”:
+- ℹ️ eventuale **PPTX** e/o **video demo (MP4)** possono non essere versionati in repo per limiti di dimensione.
+  La demo resta comunque **ripetibile** seguendo lo script e i comandi sotto.
 
 ---
 
@@ -13,50 +22,27 @@ Questa cartella contiene materiale per la **presentazione finale** e la **demo**
 
 ---
 
-## Contenuti attesi in questa cartella
-- Slide finali (PPTX e/o PDF), es:
-  - `presentazione.pptx`
-  - `presentazione.pdf` (export)
-
-- Script demo (checklist con tempi), es:
-  - `demo_script.md` (o `demo_script.pdf`)
-
-- (Opzionale) asset per slide:
-  - immagini UML, screenshot UI, figure sperimentali
-
----
-
-## Outline consigliato slide (coerente con specifiche)
-1) **Copertina** (logo, progetto, gruppo)
-2) **Problema e obiettivo** (cos’è un Password Strength Meter e perché)
-3) **Incremento Step 1–2**: UI + API (cosa dimostriamo e come)
-4) **Incremento Step 3–5**: Experiments + Dashboard + Export (cosa dimostriamo e come)
-5) **Architettura (SSOT)**: Engine riusato da UI/API/Experiments
-6) **Implementazione / Interfaccia**: UI DS1 e dashboard DS4
-7) **Validazione / Verifica**: test manuali + test automatici + CI
-8) **Valutazione sperimentale**: confronto PSM vs zxcvbn (1–2 grafici chiave)
-9) **Conclusioni + sviluppi futuri**
-
-Fonti pronte:
+## Fonti pronte (per slide e demo)
 - UML: `docs/02_uml/`
 - Figure esperimenti: `docs/04_valutazione_sperimentale/figures/`
+- Run di riferimento: `docs/04_valutazione_sperimentale/` (artifacts + metrics)
 
 ---
 
 ## Script demo (1’30”) — flow minimale consigliato
 Obiettivo: far vedere valore + completezza DS1–DS5 senza perdere tempo.
 
-1) **DS1 UI** (30–40s)
-   - Inserimento dati utente (token personali)
-   - Password debole (pattern/token) → feedback + rifiuto `validateFinal`
-   - Password forte → accettazione
+### 1) DS1 UI 
+- Inserimento dati utente (serve per i token personali).
+- Password debole con pattern/token → feedback + rifiuto `validateFinal`.
+- Password forte → accettazione.
 
-2) **DS4 Dashboard** (30–40s)
-   - Selezione run
-   - 1 metrica chiave (PSM vs zxcvbn) + breakdown per categoria
+### 2) DS4 Dashboard 
+- Apri dashboard e seleziona una run.
+- Mostra 1 metrica chiave (PSM vs zxcvbn) + breakdown per categoria.
 
-3) **DS5 Export** (10–20s)
-   - Click export (es. ExcelCSV o JSON) e download file
+### 3) DS5 Export 
+- Click export (es. ExcelCSV o JSON) e download file.
 
 Stop.
 
@@ -66,4 +52,33 @@ Stop.
 - API avviata su `http://localhost:3000` (`/health` OK)
 - UI servita da `src/` come root (`python -m http.server 8080`)
 - Almeno 1 run presente in `src/experiments/outputs/`
-- Se usate la run “ufficiale”: conservarla anche in `docs/04_valutazione_sperimentale/` e/o copiarla in `src/experiments/outputs/` per la dashboard
+
+---
+
+## Comandi rapidi (demo pronta)
+### A) Avvia UI (serve `src/` come root)
+~~~bash
+cd src
+python -m http.server 8080
+~~~
+Apri:
+- UI: `http://localhost:8080/web/`
+- Dashboard: `http://localhost:8080/web/experiments.html`
+
+### B) Avvia API
+~~~bash
+cd src/api
+npm install
+npm start
+~~~
+Verifica:
+~~~bash
+curl.exe -s http://localhost:3000/health
+~~~
+
+### C) Genera una run (se `outputs/` è vuota)
+~~~bash
+cd src/experiments
+npm install
+npm run run:sample
+~~~
