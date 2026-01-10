@@ -3,7 +3,7 @@
 Questa sezione documenta la run “di riferimento” usata per la valutazione sperimentale del progetto PSM.
 L’obiettivo è avere un set di risultati **riproducibile, verificabile e facilmente consultabile**, includendo dataset, metadati e output finali.
 
-Aggiornato al **31/12/2025**.
+Aggiornato al **10/01/2025**.
 
 ---
 
