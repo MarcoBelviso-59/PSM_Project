@@ -7,7 +7,7 @@ Questa cartella contiene gli strumenti per:
 - rendere i risultati consultabili/esportabili tramite l’API (`src/api`) che legge da `outputs/`
 - alimentare la **Dashboard DS4** (`src/web/experiments.html`) con lista run, dettaglio e statistiche
 
-Aggiornato al **27/12/2025**.
+Aggiornato al **10/01/2025**.
 
 ---
 
