@@ -2,7 +2,7 @@
 
 Questa cartella contiene il **diagramma delle classi** del progetto PSM, aggiornato per riflettere l’architettura modulare e il principio **Single Source of Truth (SSOT)**.
 
-**Aggiornato al:** **05/01/2026**  
+**Aggiornato al:** **10/01/2026**  
 
 
 ---
