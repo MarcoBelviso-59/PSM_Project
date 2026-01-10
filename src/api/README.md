@@ -4,7 +4,7 @@ Questa cartella contiene la REST API del progetto:
 - **DS2**: valutazione e validazione password usando il **PSM Engine** (single source of truth)
 - **DS4/DS5 (supporto backend)**: endpoint per consultare run esperimenti salvati in `src/experiments/outputs/` ed esportarli (CSV/TSV/ExcelCSV/JSON)
 
-Aggiornato al **31/12/2025**.
+Aggiornato al **10/01/2026**.
 
 ---
 
