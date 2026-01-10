@@ -8,7 +8,7 @@ Progetto di Ingegneria del Software (A.A. 2025/2026): realizzazione di un **Pass
 - **Esperimenti (DS3–DS5)**: runner + baseline (zxcvbn), risultati persistiti ed export via API
 - **Dashboard (DS4)**: pagina web per consultare run, statistiche e download export
 
-**Aggiornato al:** **05/01/2026**  
+**Aggiornato al:** **10/01/2026**  
 **Scadenza progetto (proroga):** **10/01/2026**
 
 ---
@@ -31,12 +31,14 @@ Progetto di Ingegneria del Software (A.A. 2025/2026): realizzazione di un **Pass
 - ✅ **DS5 (export)**: export via API (CSV/TSV/ExcelCSV/JSON) + pulsanti in dashboard.
 - ✅ **Docker / docker-compose**: demo riproducibile (API + Web) con mount degli outputs esperimenti.
 - ✅ **Test automatici + CI**: workflow “CI - Tests” (Jest) + workflow di smoketest endpoint experiments/export.
-- ✅ **UML completo**: Use Case + Sequence + **Class Diagram** in `docs/02_uml/` (il diagramma classi è in `docs/02_uml/class/`).
+- ✅ **UML completo**: Use Case + Sequence + **Class Diagram** in `docs/02_uml/`.
+- ✅ **Relazione tecnica**: `docs/05_relazione/Relazione_tecnica_PSM.pdf`.
+- ✅ **Presentazione (PDF)**: `docs/06_presentazione/PSM_presentazione.pdf`.
+- ✅ **Riferimenti/paper**: `docs/99_riferimenti/` (PDF versionati e citabili).
 
-### Da completare (deliverable finali) ⏳
-- ⏳ **Relazione tecnica** (in `docs/05_relazione/`) conforme alle specifiche.
-- ⏳ **Presentazione** + **script demo 1’30”** (in `docs/06_presentazione/`) conforme alle specifiche.
-- ⏳ **Rifinitura documentale**: allineamento README e popolamento `docs/99_riferimenti/` con i paper citati.
+Nota su file “pesanti”:
+- ℹ️ **PPTX** e/o **video demo (MP4)** non sono versionati in repo per vincoli di dimensione.  
+  La demo è comunque **ripetibile** seguendo lo script e i comandi in `docs/06_presentazione/README.md`.
 
 ---
 
