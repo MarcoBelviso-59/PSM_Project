@@ -2,8 +2,7 @@
 
 Questa cartella contiene tutta la documentazione del progetto (specifiche, analisi, UML, architettura, valutazione sperimentale, relazione, presentazione e riferimenti).
 
-**Aggiornato al:** **05/01/2026**  
-
+**Aggiornato al:** **10/01/2026**
 
 ---
 
@@ -18,7 +17,7 @@ Questa cartella contiene tutta la documentazione del progetto (specifiche, anali
   Diagrammi UML:
   - use case
   - sequence (DS1–DS5)
-  - **class diagram** (ora in `02_uml/class/`)
+  - class diagram (in `02_uml/class/`)
 
 - `03_architettura/`  
   Materiale architetturale: componenti, responsabilità, dipendenze e contratti.
@@ -27,13 +26,13 @@ Questa cartella contiene tutta la documentazione del progetto (specifiche, anali
   Run “di riferimento” (dataset/seed/risultati/figure) pronta da citare in relazione e slide.
 
 - `05_relazione/`  
-  Materiale per la relazione finale (testo, immagini, tabelle, bibliografia).
+  Relazione tecnica finale (PDF).
 
 - `06_presentazione/`  
-  Materiale per slide e script demo (1’30”).
+  Presentazione finale (PDF) + script/istruzioni demo.
 
 - `99_riferimenti/`  
-  Paper e riferimenti (da versionare in repo) usati in relazione/presentazione.
+  Paper e riferimenti (versionati in repo) usati in relazione/presentazione.
 
 ---
 
@@ -46,6 +45,9 @@ Questa cartella contiene tutta la documentazione del progetto (specifiche, anali
 - Class Diagram: `02_uml/class/PSM_diagramma_classi.pdf`
 - Bozza/analisi iniziale: `01_analisi/Bozza_Progetto_PSM.pdf`
 - Run di riferimento: `04_valutazione_sperimentale/` (artifacts + figures)
+- Relazione tecnica: `05_relazione/Relazione_tecnica_PSM.pdf`
+- Presentazione (PDF): `06_presentazione/PSM_presentazione.pdf`
+- Paper: `99_riferimenti/`
 
 ---
 
@@ -54,7 +56,8 @@ La documentazione serve a dimostrare coerenza tra:
 - requisiti / specifiche
 - implementazione (UI + API + Engine + Experiments + Dashboard)
 - evidenze sperimentali (confronto con baseline e export)
-- demo e relazione finale
+- relazione e demo
 
-
-- istruzioni minime su come usare/leggere quel materiale
+Nota su file “pesanti”:
+- ℹ️ eventuali asset addizionali (PPTX/MP4) possono non essere inclusi in repo per limiti di dimensione;  
+  in tal caso, lo script demo e i comandi di esecuzione restano in `06_presentazione/README.md`.
