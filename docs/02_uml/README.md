@@ -2,7 +2,7 @@
 
 Questa cartella contiene i diagrammi UML utilizzati per descrivere scenari, componenti e interazioni del progetto (DS1–DS5).
 
-**Aggiornato al:** **05/01/2026**  
+**Aggiornato al:** **10/01/2026**  
 **Scadenza progetto (proroga):** **10/01/2026**
 
 ---
