@@ -2,7 +2,7 @@
 
 Questa cartella contiene i documenti “ufficiali” che definiscono requisiti e vincoli di consegna del progetto.
 
-**Aggiornato al:** **05/01/2026**  
+**Aggiornato al:** **10/01/2026**
 
 ---
 
@@ -19,21 +19,21 @@ Questa cartella contiene i documenti “ufficiali” che definiscono requisiti e
 1) Leggere prima le **specifiche** (cosa è obbligatorio e come verrà valutato).
 2) Leggere poi le **linee guida** (come presentare, argomentare e dimostrare).
 3) Usare questi documenti come checklist durante:
-   - stesura relazione
-   - preparazione presentazione
-   - preparazione demo 1’30”
    - revisione finale della repo (coerenza e riproducibilità)
+   - preparazione presentazione e demo
+   - correzioni ultime su relazione e riferimenti
 
 ---
 
-## Stato attuale (in repo)
+## Stato attuale (coerente con la repo)
 - ✅ Implementazione DS1–DS5 completata (UI + Engine + API + Experiments + Dashboard + Export).
 - ✅ Docker/compose presenti per demo ripetibile.
 - ✅ Test automatici e CI presenti (Jest + workflow).
 - ✅ UML presente (use case + sequence + class diagram).
+- ✅ Relazione tecnica presente: `docs/05_relazione/Relazione_tecnica_PSM.pdf`.
+- ✅ Presentazione (PDF) presente: `docs/06_presentazione/PSM_presentazione.pdf`.
+- ✅ Riferimenti/paper versionati: `docs/99_riferimenti/`.
 
-Deliverable rimanenti:
-- ⏳ Relazione tecnica finale (`docs/05_relazione/`)
-- ⏳ Presentazione + script demo 1’30” (`docs/06_presentazione/`)
-- ⏳ Riferimenti/paper versionati e citabili (`docs/99_riferimenti/`)
-- ⏳ Allineamento README/documentazione (evitare TODO obsoleti)
+Nota su file “pesanti”:
+- ℹ️ eventuali **slide PPTX** e/o **video demo (MP4)** possono non essere inclusi in repo per limiti di dimensione.  
+  La demo resta comunque ripetibile seguendo lo script e i comandi in `docs/06_presentazione/README.md`.
