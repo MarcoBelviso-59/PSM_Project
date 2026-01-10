@@ -2,7 +2,7 @@
 
 Questa cartella raccoglie materiale di analisi, bozza progettuale e note di contesto.
 
-Aggiornato al **27/12/2025**.
+Aggiornato al *10/01/2025**.
 
 ---
 
