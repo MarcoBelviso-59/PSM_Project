@@ -8,7 +8,7 @@ Questa cartella **`/tests`** contiene un **piano di test manuale** (checklist) p
 > Importante: i **test automatici** non stanno qui.
 > I test automatici (unit + integration) sono in **`PSM_Project/src/api/__tests__/`** e vengono eseguiti dalla CI.
 
-Aggiornato al **29/12/2025**.
+**Aggiornato al:** **10/01/2026**
 
 ---
 
@@ -67,7 +67,7 @@ Procedura consigliata:
 ### B) Manuale via Dashboard (DS4)
 Prerequisiti:
 1) avere almeno 1 run in `src/experiments/outputs/`
-   - oppure usare una run “ufficiale” scaricata da GitHub Actions e copiata in `src/experiments/outputs/`
+   - oppure usare una run “ufficiale” e copiarla in `src/experiments/outputs/`
 2) avviare l’API (`src/api`) su `http://localhost:3000`
 
 Avvio UI:
@@ -92,10 +92,10 @@ Modo più veloce per capire se un cambio all’engine ha rotto qualcosa.
 node -e '
 const e = require("./src/engine/psmEngine.js");
 const tokens = ["mario","rossi","example","mario.rossi"];
-const ev = e.evaluate("Mario2025!", tokens);
+const ev = e.evaluate("Mario2026!", tokens);
 console.log(ev);
 console.log("feedback:", e.generateFeedback(ev));
-console.log("final:", e.validateFinal("Mario2025!", tokens));
+console.log("final:", e.validateFinal("Mario2026!", tokens));
 '
 ~~~
 
@@ -170,10 +170,10 @@ Se `PSM_API_KEY` è impostata, aggiungere:
 3) `12345678`
 4) `qwerty12!`
 5) `Password!1`
-6) `novembre2025!`
+6) `novembre2026!`
 7) `RomaRomaRoma1!`
 8) `Milan1908!!`
-9) `Goku2025!!`
+9) `Goku2026!!`
 10) `A1!a`
 11) `Aa1!Aa1!`
 12) `Z7$kQ2!m`
@@ -185,10 +185,10 @@ Se `PSM_API_KEY` è impostata, aggiungere:
 Impostare prima: nome Mario, cognome Rossi, email mario.rossi@example.com  
 Token suggeriti: `["mario","rossi","mario.rossi","example","com"]`
 
-16) `Mario2025!`
+16) `Mario2026!`
 17) `rossi!123A`
 18) `example!A1mario`
-19) `SuperLungaMarioRossi2025!!!Qx9#`
+19) `SuperLungaMarioRossi2026!!!Qx9#`
 20) `Z7$kQ2!mP9@rT4#x`
 
 ### Coerenza livello/suggerimenti
@@ -215,4 +215,3 @@ Il test plan è “OK” quando:
 Se un caso fallisce:
 - aprire issue con: password, contesto, output (score/level/pattern/feedback + validateFinal), e expected
 - se il fallimento è “atteso” (policy cambiata), aggiornare qui l’aspettativa con motivazione
-
