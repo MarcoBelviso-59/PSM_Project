@@ -196,8 +196,8 @@ const SMALL_SETS_IT = {
     citta: new Set([
       "roma","milano","napoli","torino","palermo","genova","bologna","firenze","venezia","verona",
       "bari","catania","padova","trieste","brescia","prato","taranto","parma","modena","reggio",
-      "londra","parigi","madrid","barcellona","berlino","monaco","vienna","zurigo","amsterdam",
-      "lisbona","bruxelles","dublino","newyork","losangeles","chicago","miami","boston"
+      "londra","parigi","madrid","barcellona","berlino","monaco","vienna","zurigo","amsterdam","valencia",
+      "lisbona","bruxelles","dublino","newyork","losangeles","chicago","miami","boston","lasvegas"
     ]),
 
     animali: new Set([
@@ -258,7 +258,7 @@ const POP_CULTURE_WORDS = new Set([
   // Star Wars
   "starwars","darthvader","vader","skywalker","lukeskywalker","leia","yoda","mandalorian","grogu","kylo","stormtrooper",
   // Stranger Things
-  "strangerthings","eleven","vecna","demogorgon","hopper","henrycreel","steveharrington","demodog",
+  "strangerthings","eleven","vecna","demogorgon","hopper","henrycreel","steveharrington","demodog", "mindflayer","willbyers",
   // The Witcher / LOTR / GOT
   "witcher","geralt","ciri","yennefer",
   "lotr","lordoftherings","frodo","gandalf","aragorn","legolas","sauron",
@@ -266,7 +266,7 @@ const POP_CULTURE_WORDS = new Set([
   // Anime/altro pop
   "pokemon","dragonballsuper","onepiece","narutoshippuden","attackontitan","yu-gi-oh","yugi","yuma",
     // --- Sport (calcio & co.) ---
-  "cristianoronaldo","ronaldo","cr7","cristiano","cris",
+  "cristianoronaldo","ronaldo","cr7","cristiano","cris", "calcio",
   "lionelmessi","messi","leomessi","lm10",
   "neymar","neymarjr","lamine","yaminelamal","lamal",
   "kylianmbappe","mbappe",
