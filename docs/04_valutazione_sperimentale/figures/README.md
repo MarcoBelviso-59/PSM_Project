@@ -3,6 +3,8 @@
 Questa sezione riassume i risultati dell’esperimento ufficiale eseguito tramite GitHub Actions usando `dataset_v1` con seed fisso `12345` (run riproducibile).
 I punteggi confrontano il motore PSM con la baseline `zxcvbn` (normalizzata 0–100).
 
+**Aggiornato al:** **10/01/2026**
+
 ## Figure
 
 ### 1) Distribuzione score PSM
@@ -24,5 +26,3 @@ Interpretazione: i punti sotto la diagonale indicano casi in cui PSM è più sev
 ![Mean by category](mean_by_category_bars.png)
 
 Risultato chiave: `random strong` è alta per entrambi; su `personal tokens` e `dictionary decorated` PSM assegna punteggi sensibilmente inferiori rispetto a zxcvbn, coerentemente con l’obiettivo del progetto.
-
-
